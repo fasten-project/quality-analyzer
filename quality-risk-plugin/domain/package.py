@@ -27,7 +27,12 @@ class Package:
         self.product = cg.product
         self.version = cg.version
         self._func_list = []  # type: List[Function] # extracted from lizard
-        self._method_list = []
+        self._method_list = []  # extracted from call graph or not needed, this can be get from cg
+        # aggregated metric of lizard results
+        self.method_count = None
+        self.noc = None
+        self.complexity = None
+
         """
         type: List[Method]  or List[str] or Map[] extracted from cg todo: type need to decide
         Todo: data structures for lists of internal nodes (methods) and external nodes (methods) in call graph,
@@ -71,6 +76,7 @@ class Function:
         self.general_fan_out = func.general_fan_out
         self.length = func.length
         self.top_nesting_level = func.top_nesting_level
+
 
     def __eq__(self, other):
         return self.name == other.name and self.parameters == other.parameters

@@ -1,3 +1,6 @@
+"""
+Module provides graph query and json query of a call graph in FASTEN json format.
+"""
 
 
 class GraphQuery:

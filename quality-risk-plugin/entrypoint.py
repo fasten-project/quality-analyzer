@@ -83,7 +83,7 @@ def main():
     sleep_time = args.sleep_time
 
     plugin = RapidPlugin(bootstrap_servers, in_topic, out_topic, log_topic,
-                             err_topic, group)
+                         err_topic, group)
 
     # Run forever
     while True:
