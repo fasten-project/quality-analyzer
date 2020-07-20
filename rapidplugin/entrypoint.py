@@ -2,7 +2,7 @@ import argparse
 import json
 from zipfile import ZipFile
 from fasten.plugins.kafka import KafkaPlugin
-from .domain.package import Package
+# from rapidplugin.domain.package import Package
 import lizard
 import lizard_languages
 from pydriller import RepositoryMining
@@ -44,13 +44,17 @@ class RapidPlugin(KafkaPlugin):
         """
 
     def consume(self, record):
-        data = json.loads(record)
-        package = Package("maven", data['artifactId'], data['version'])
-        package.path = data['jarPath']
-
         message = self.create_message(record, {"status": "begin"})
         self.emit_message(self.log_topic, message, "begin", "")
-        out_message = self.create_message(record)
+        # print(record)
+        # data = json.loads(record)
+        # package = Package("maven", data['artifactId'], data['version'])
+        # package.path = data['jarPath']
+        #
+        # message = self.create_message(record, {"status": "begin"})
+        # self.emit_message(self.log_topic, message, "begin", "")
+        # out_message = self.create_message(data)
+        # self.emit_message(self.produce_topic, out_message, {"repo": package.path})
 
     def _unzip(self, path):
         code_path = None
