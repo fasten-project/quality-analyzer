@@ -2,7 +2,7 @@ import argparse
 import json
 from zipfile import ZipFile
 from fasten.plugins.kafka import KafkaPlugin
-# from rapidplugin.domain.package import Package
+from rapidplugin.domain.package import Package
 import lizard
 import lizard_languages
 from pydriller import RepositoryMining
@@ -44,17 +44,24 @@ class RapidPlugin(KafkaPlugin):
         """
 
     def consume(self, record):
-        message = self.create_message(record, {"status": "begin"})
-        self.emit_message(self.log_topic, message, "begin", "")
         # print(record)
-        # data = json.loads(record)
-        # package = Package("maven", data['artifactId'], data['version'])
-        # package.path = data['jarPath']
-        #
         # message = self.create_message(record, {"status": "begin"})
         # self.emit_message(self.log_topic, message, "begin", "")
-        # out_message = self.create_message(data)
-        # self.emit_message(self.produce_topic, out_message, {"repo": package.path})
+        product = record['groupId']+":"+record['artifactId']
+        package = Package("maven", product, record['version'])
+        package.path = record['repoPath']
+        message = self.create_message(record, {"status": "begin"})
+        self.emit_message(self.log_topic, message, "begin", "")
+        metric = {
+            "nloc": package.nloc(),
+            "method_count": package.method_count(),
+            "complexity": package.complexity()
+        }
+        out_message = {
+            "product": product,
+            "metrics": metric
+        }
+        self.emit_message(self.produce_topic, out_message, "succeed", "")
 
     def _unzip(self, path):
         code_path = None
@@ -70,36 +77,12 @@ def get_parser():
         "RAPID consumer"
     )
     parser.add_argument('in_topic', type=str, help="Kafka topic to read from.")
-    parser.add_argument(
-        'out_topic',
-        type=str,
-        help="Kafka topic to write to."
-    )
-    parser.add_argument(
-        'err_topic',
-        type=str,
-        help="Kafka topic to write errors to."
-    )
-    parser.add_argument(
-        'log_topic',
-        type=str,
-        help="Kafka topic to write logs to."
-    )
-    parser.add_argument(
-        'bootstrap_servers',
-        type=str,
-        help="Kafka servers, comma separated."
-    )
-    parser.add_argument(
-        'group',
-        type=str,
-        help="Kafka consumer group to which the consumer belongs."
-    )
-    parser.add_argument(
-        'sleep_time',
-        type=int,
-        help="Time to sleep in between each scrape (in sec)."
-    )
+    parser.add_argument('out_topic', type=str, help="Kafka topic to write to.")
+    parser.add_argument('err_topic', type=str, help="Kafka topic to write errors to.")
+    parser.add_argument('log_topic', type=str, help="Kafka topic to write logs to.")
+    parser.add_argument('bootstrap_servers', type=str, help="Kafka servers, comma separated.")
+    parser.add_argument('group', type=str, help="Kafka consumer group to which the consumer belongs.")
+    parser.add_argument('sleep_time', type=int, help="Time to sleep in between each scrape (in sec).")
     return parser
 
 

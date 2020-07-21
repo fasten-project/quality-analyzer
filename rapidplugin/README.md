@@ -3,19 +3,22 @@
 ## Test and debug
 
 ```
+# install Kafka and kafkacat
+Go to '{path_to_kafka}/bin', or add '{path_to_kafka}/bin' to system path.
+
 # start server
-bin/zookeeper-server-start.sh config/zookeeper.properties &
-bin/kafka-server-start.sh config/server.properties &
+zookeeper-server-start.sh config/zookeeper.properties &
+kafka-server-start.sh config/server.properties &
 
 # creat topic
-bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RepoCloner.out
-bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.out
-bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.error
-bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.log
+kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RepoCloner.out
+kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.out
+kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.error
+kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.log
 
 # add message to topic for consuming
-echo '{"artifactID": "fasten", "version": "1.0.0", "repoPath": "https://github.com/fasten-project/fasten.git"}' | \
-    bin/kafka-console-producer.sh --broker-list localhost:9092 --topic fasten.RepoCloner.out
+echo '{"groupId":"fasten-project", artifactId": "fasten", "version": "1.0.0", "repoPath": "https://github.com/fasten-project/fasten.git"}' | \
+    kafka-console-producer.sh --broker-list localhost:9092 --topic fasten.RepoCloner.out
 
 # see if topic added sucessfully
 kafkacat -C -b localhost -t fasten.RepoCloner.out -p 0 -o 0 -e

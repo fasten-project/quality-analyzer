@@ -2,7 +2,6 @@
 This module contains all the classes related to a product, such as
 Module, File, Method.
 """
-# TODO: language specific, mvp starts from Maven and Java
 
 import logging
 from _datetime import datetime
@@ -29,15 +28,29 @@ class Package:
         self._func_list = []  # type: List[Function] # extracted from lizard
         self._method_list = []  # extracted from call graph or not needed, this can be get from cg
         # aggregated metric of lizard results
-        self.method_count = None
-        self.nloc = None
-        self.complexity = None
+        self._method_count = None
+        self._nloc = None
+        self._complexity = None
 
         """
-        type: List[Method]  or List[str] or Map[] extracted from cg todo: type need to decide
-        Todo: data structures for lists of internal nodes (methods) and external nodes (methods) in call graph,
+        type: List[Method] or List[str] or Map[] extracted from cg. type need to decide,
+        data structures for lists of internal nodes (methods) and external nodes (methods) in call graph,
                  and a mapping between method name in cg and in lizard.
         """
+    def nloc(self) -> Optional[int]:
+        self._calculate_metrics()
+        return self._nloc
+
+    def method_count(self) -> Optional[int]:
+        self._calculate_metric()
+        return self._method_count
+
+    def complexity(self) -> Optional:
+        self._calculate_metric()
+        return self._complexity
+
+    def _calculate_metric(self):
+        return
 
 
 class Dependency:
@@ -52,16 +65,13 @@ class Dependency:
 
 class Function:
     """
-    This class represents a function in a class. Contains various information,
+    This class represents a function in a package. Contains various information,
     extracted through Lizard.
     """
 
     def __init__(self, func):
         """
-        Initialize a function object. This is calculated using Lizard: it parses
-        the source code of all the modifications in a commit, extracting
-        information of the methods contained in the file (if the file is a
-        source code written in one of the supported programming languages).
+        Initialize a function object. This is calculated using Lizard
         """
         self.name = func.name
         self.long_name = func.long_name

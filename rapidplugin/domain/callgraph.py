@@ -15,7 +15,6 @@ class CallGraph:
         self.version = None
         self._method_list = []
         self._call_list = []
-        # todo: use map?
 
 
 class MethodType(Enum):
