@@ -2,9 +2,9 @@ import argparse
 import json
 from zipfile import ZipFile
 from fasten.plugins.kafka import KafkaPlugin
+
 from rapidplugin.domain.package import Package
-import lizard
-import lizard_languages
+
 from pydriller import RepositoryMining
 
 
@@ -47,8 +47,10 @@ class RapidPlugin(KafkaPlugin):
         # print(record)
         # message = self.create_message(record, {"status": "begin"})
         # self.emit_message(self.log_topic, message, "begin", "")
-        product = record['groupId']+":"+record['artifactId']
-        package = Package("maven", product, record['version'])
+        forge = "maven"
+        product = record['groupId']+"-"+record['artifactId']
+        version = record['version']
+        package = Package(forge, product, version)
         package.path = record['repoPath']
         message = self.create_message(record, {"status": "begin"})
         self.emit_message(self.log_topic, message, "begin", "")
@@ -57,10 +59,10 @@ class RapidPlugin(KafkaPlugin):
             "method_count": package.method_count(),
             "complexity": package.complexity()
         }
-        out_message = {
-            "product": product,
+        payload = {
             "metrics": metric
         }
+        out_message = self.create_message(record, {"payload": payload})
         self.emit_message(self.produce_topic, out_message, "succeed", "")
 
     def _unzip(self, path):
