@@ -65,14 +65,6 @@ class RapidPlugin(KafkaPlugin):
         out_message = self.create_message(record, {"payload": payload})
         self.emit_message(self.produce_topic, out_message, "succeed", "")
 
-    def _unzip(self, path):
-        code_path = None
-        return code_path
-
-    def _clone(self, path):
-        code_path = None
-        return code_path
-
 
 def get_parser():
     parser = argparse.ArgumentParser(
