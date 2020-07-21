@@ -13,11 +13,11 @@ bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-fac
 bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.error
 bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.log
 
-# add message to consume topic
+# add message to topic for consuming
 echo '{"artifactID": "fasten", "version": "1.0.0", "repoPath": "https://github.com/fasten-project/fasten.git"}' | \
     bin/kafka-console-producer.sh --broker-list localhost:9092 --topic fasten.RepoCloner.out
 
-# see if consume topic added sucessfully
+# see if topic added sucessfully
 kafkacat -C -b localhost -t fasten.RepoCloner.out -p 0 -o 0 -e
 
 # run plugin
