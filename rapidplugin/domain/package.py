@@ -8,7 +8,8 @@ from _datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import List, Set, Dict, Tuple, Optional
-
+import lizard
+import lizard_languages
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +20,15 @@ class Package:
     extracted from FASTEN call graph Json file.
     """
 
-    def __int__(self, forge, product, version):
+    def __init__(self, forge, product, version):
         self.forge = forge
         self.product = product
         self.version = version
         self.path = None
         self._file_list = []
-        self._func_list = []  # type: List[Function] # extracted from lizard
-        self._method_list = []  # extracted from call graph or not needed, this can be get from cg
-        # aggregated metric of lizard results
+        self._func_list = []  # List[Function] extracted from lizard with metrics
+        self._method_list = []  # List[Methods] extracted from cg
+        # aggregated metric
         self._method_count = None
         self._nloc = None
         self._complexity = None
@@ -42,14 +43,17 @@ class Package:
         return self._nloc
 
     def method_count(self) -> Optional[int]:
-        self._calculate_metric()
+        self._calculate_metrics()
         return self._method_count
 
     def complexity(self) -> Optional:
-        self._calculate_metric()
+        self._calculate_metrics()
         return self._complexity
 
-    def _calculate_metric(self):
+    def _calculate_metrics(self):
+        self._nloc = -1
+        self._method_count = -1
+        self._complexity = -1
         return
 
 
