@@ -1,11 +1,6 @@
 import argparse
-import json
-from zipfile import ZipFile
 from fasten.plugins.kafka import KafkaPlugin
-
 from rapidplugin.domain.package import Package
-
-from pydriller import RepositoryMining
 
 
 class RapidPlugin(KafkaPlugin):
@@ -35,32 +30,33 @@ class RapidPlugin(KafkaPlugin):
 
         """
         consume topic: 
-           1. extract package info, repo info write to metadata DB, 
-                not Kafka topic, need to confirm.
-           2. get the link from metadataDB, downloaded source code
-           3. either extend fasten-python-plugin with metadataDB 
-                connection or implement a java plugin to produce
-                a Kafka topic with package name and link to code (assuming this)
+           1. extract package info from Kafka topic 'fasten.repoCloner.out'
+           2. get the link of source code
+           3. calculate quality metrics
+           4. send to Kafka topic 'fasten.RapidPlugin.out (err, log)'
         """
 
     def consume(self, record):
         # print(record)
         # message = self.create_message(record, {"status": "begin"})
         # self.emit_message(self.log_topic, message, "begin", "")
-        forge = "maven"
-        product = record['groupId']+"-"+record['artifactId']
+        forge = "mvn"
+        product = record['groupId']+":"+record['artifactId']
         version = record['version']
-        package = Package(forge, product, version)
-        package.path = record['repoPath']
+        path = record['repoPath']
+        package = Package(forge, product, version, path)
         message = self.create_message(record, {"status": "begin"})
         self.emit_message(self.log_topic, message, "begin", "")
-        metric = {
+        metrics = {
             "nloc": package.nloc(),
             "method_count": package.method_count(),
             "complexity": package.complexity()
         }
         payload = {
-            "metrics": metric
+            "product": product,
+            "forge": "mvn",
+            "generator": "Lizard",
+            "metrics": metrics
         }
         out_message = self.create_message(record, {"payload": payload})
         self.emit_message(self.produce_topic, out_message, "succeed", "")

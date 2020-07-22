@@ -20,11 +20,11 @@ class Package:
     extracted from FASTEN call graph Json file.
     """
 
-    def __init__(self, forge, product, version):
+    def __init__(self, forge, product, version, path):
         self.forge = forge
         self.product = product
         self.version = version
-        self.path = None
+        self.path = path
         self._file_list = []
         self._func_list = []  # List[Function] extracted from lizard with metrics
         self._method_list = []  # List[Methods] extracted from cg
@@ -32,6 +32,7 @@ class Package:
         self._method_count = None
         self._nloc = None
         self._complexity = None
+        self._token_count = None
 
         """
         type: List[Method] or List[str] or Map[] extracted from cg. type need to decide,
@@ -51,10 +52,28 @@ class Package:
         return self._complexity
 
     def _calculate_metrics(self):
-        self._nloc = -1
-        self._method_count = -1
-        self._complexity = -1
+        paths = [self.path]
+        exc_patterns = ["*/test/*"]
+        lans = ["java"]
+        self._nloc = 0
+        self._method_count = 0
+        self._complexity = 0
+        self._token_count = 0
+        analyser = lizard.analyze(paths, exc_patterns, 1, None, lans)
+        for f in analyser:
+            self._nloc = self._nloc + f.nloc
+            self._method_count = self._method_count + f.function_list.__len__()
+            self._complexity = -1
+            self._token_count = self._token_count + f.token_count
         return
+
+    def files(self):
+        file_path = Path(self.path)
+
+
+class File:
+    def __init__(self, path):
+        self.path = path
 
 
 class Dependency:
