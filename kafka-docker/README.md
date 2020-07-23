@@ -1,13 +1,11 @@
-# Installation
-
-## Prerequisites
+#  Prerequisites
 
 ```
 docker  
 docker-compose
 ```
 
-## Setup
+# Setup
 
 To setup a Kafka cluster, execute the following in ```kafka-docker/```
 
@@ -19,7 +17,7 @@ The Kafka cluster will exist on the Docker network ```kafka-docker_default```, w
 
 From outside the Docker network, the broker is reachable at ```localhost:9202```.
 
-## Testing
+# Testing
 
 To test putting data into a topic, try the following after first cloning ```https://github.com/fasten-project/fasten``` into the parent directory containing RAPID.
 
