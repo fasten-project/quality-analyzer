@@ -50,7 +50,9 @@ class RapidPlugin(KafkaPlugin):
         metrics = {
             "nloc": package.nloc(),
             "method_count": package.method_count(),
-            "complexity": package.complexity()
+            "complexity": package.complexity(),
+            "file_list": [f.metrics() for f in package.files()],
+            # "function_list": [fun.metrics() for fun in package.functions()]
         }
         payload = {
             "product": product,

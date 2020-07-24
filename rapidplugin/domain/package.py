@@ -4,12 +4,9 @@ Module, File, Method.
 """
 
 import logging
-from _datetime import datetime
-from enum import Enum
 from pathlib import Path
 from typing import List, Set, Dict, Tuple, Optional
 import lizard
-import lizard_languages
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +31,6 @@ class Package:
         self._complexity = None
         self._token_count = None
 
-        """
-        type: List[Method] or List[str] or Map[] extracted from cg. type need to decide,
-        data structures for lists of internal nodes (methods) and external nodes (methods) in call graph,
-                 and a mapping between method name in cg and in lizard.
-        """
     def nloc(self) -> Optional[int]:
         self._calculate_metrics()
         return self._nloc
@@ -61,19 +53,40 @@ class Package:
         self._token_count = 0
         analyser = lizard.analyze(paths, exc_patterns, 1, None, lans)
         for f in analyser:
+            # print(f.__dict__)
+            self._file_list.append(File(f))
+            # self._func_list.append(Function(fun) for fun in f.function_list)
+            for fun in f.function_list:
+                self._func_list.append(Function(fun))
             self._nloc = self._nloc + f.nloc
-            self._method_count = self._method_count + f.function_list.__len__()
+            self._method_count = self._method_count + len(f.function_list)
             self._complexity = -1
             self._token_count = self._token_count + f.token_count
         return
 
     def files(self):
-        file_path = Path(self.path)
+        return self._file_list
+
+    def functions(self):
+        return self._func_list
 
 
 class File:
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, fileinfo):
+        """
+        Initialize a function object. This is extracted from Lizard
+        """
+        self.filename = fileinfo.filename
+        self.nloc = fileinfo.nloc
+        self.token_count = fileinfo.token_count
+        self.function_list = [Function(x) for x in fileinfo.function_list]
+
+    def metrics(self):
+        return {
+            "filename": self.filename,
+            "nloc": self.nloc,
+            "function_list": [fun.metrics() for fun in self.function_list]
+        }
 
 
 class Dependency:
@@ -110,6 +123,12 @@ class Function:
         self.general_fan_out = func.general_fan_out
         self.length = func.length
         self.top_nesting_level = func.top_nesting_level
+
+    def metrics(self):
+        return {
+            "name": self.name,
+            "nloc": self.nloc
+        }
 
     def __eq__(self, other):
         return self.name == other.name and self.parameters == other.parameters

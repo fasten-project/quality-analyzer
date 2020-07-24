@@ -29,6 +29,8 @@ python3 entrypoint.py fasten.RepoCloner.out fasten.RapidPlugin.out fasten.RapidP
 # see if topic produced sucessfully
 kafkacat -C -b localhost -t fasten.RapidPlugin.log -p 0 -o 0 -e
 ```
+
+## Example json message in the produced topic
 ```
 {
   "plugin_name": "RapidPlugin",
@@ -37,13 +39,16 @@ kafkacat -C -b localhost -t fasten.RapidPlugin.log -p 0 -o 0 -e
     "groupId": "fasten-project",
     "artifactId": "fasten",
     "version": "1.0.0",
-    "repoPath": "https://github.com/fasten-project/fasten.git"
+    "repoPath": "/Users/cgao/workspace/fasten-project/fasten"
   },
-  "created_at": "1595336813.823268",
+  "created_at": "1595434993.938192",
   "payload": {
+    "product": "fasten-project:fasten",
+    "forge": "mvn",
+    "generator": "Lizard",
     "metrics": {
-      "nloc": -1,
-      "method_count": -1,
+      "nloc": 11188,
+      "method_count": 1115,
       "complexity": -1
     }
   }

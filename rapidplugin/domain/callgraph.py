@@ -8,7 +8,7 @@ Method, Call, extracted from FASTEN call graph json file.
 
 class CallGraph:
 
-    def __int__(self, path: str):
+    def __init__(self, path: str):
         self._path = path
         self.forge = None
         self.product = None
