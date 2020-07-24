@@ -23,7 +23,7 @@ To test putting data into a topic, run the following:
 ``` console
 docker run -i --rm --network=kafka-docker_default \
     edenhill/kafkacat:1.6.0 kafkacat \
-    -b kafka:29092 -t fasten.RepoCloner.out -K: -P \
+    -b kafka:29092 -t fasten.RepoCloner.out -P \
     < fasten.RepoCloner.out-testdata.txt
 ```
 
