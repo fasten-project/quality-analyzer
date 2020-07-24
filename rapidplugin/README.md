@@ -1,5 +1,12 @@
 # Rapid plugin
 
+## Installation
+
+Run the following either normally or in a virtual environment:
+``` console
+pip install -r requirements.txt
+```
+
 ## Test and debug
 
 ```
