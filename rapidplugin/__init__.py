@@ -1,1 +1,1 @@
-from rapidplugin.domain.package import Package
+from domain.package import Package

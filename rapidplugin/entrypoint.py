@@ -1,6 +1,6 @@
 import argparse
 from fasten.plugins.kafka import KafkaPlugin
-from rapidplugin.domain.package import Package
+from domain.package import Package
 
 
 class RapidPlugin(KafkaPlugin):
