@@ -47,18 +47,17 @@ class RapidPlugin(KafkaPlugin):
         package = Package(forge, product, version, path)
         message = self.create_message(record, {"status": "begin"})
         self.emit_message(self.log_topic, message, "begin", "")
-        metrics = {
-            "nloc": package.nloc(),
-            "method_count": package.method_count(),
-            "complexity": package.complexity(),
-            "file_list": [f.metrics() for f in package.files()],
-            # "function_list": [fun.metrics() for fun in package.functions()]
-        }
+        # metrics = {
+        #     "nloc": package.nloc(),
+        #     "method_count": package.method_count(),
+        #     "complexity": package.complexity(),
+        #     "file_list": [f.metrics() for f in package.files()],
+        # }
         payload = {
             "product": product,
             "forge": "mvn",
             "generator": "Lizard",
-            "metrics": metrics
+            "metrics": package.metrics()
         }
         out_message = self.create_message(record, {"payload": payload})
         self.emit_message(self.produce_topic, out_message, "succeed", "")

@@ -4,7 +4,7 @@ Module, File, Method.
 """
 
 import logging
-from pathlib import Path
+import json
 from typing import List, Set, Dict, Tuple, Optional
 import lizard
 
@@ -53,9 +53,7 @@ class Package:
         self._token_count = 0
         analyser = lizard.analyze(paths, exc_patterns, 1, None, lans)
         for f in analyser:
-            # print(f.__dict__)
             self._file_list.append(File(f))
-            # self._func_list.append(Function(fun) for fun in f.function_list)
             for fun in f.function_list:
                 self._func_list.append(Function(fun))
             self._nloc = self._nloc + f.nloc
@@ -69,6 +67,14 @@ class Package:
 
     def functions(self):
         return self._func_list
+
+    def metrics(self):
+        return {
+            "nloc": self.nloc(),
+            "method_count": self.method_count(),
+            "complexity": self.complexity(),
+            "file_list": [f.metrics() for f in self.files()],
+        }
 
 
 class File:
@@ -125,10 +131,8 @@ class Function:
         self.top_nesting_level = func.top_nesting_level
 
     def metrics(self):
-        return {
-            "name": self.name,
-            "nloc": self.nloc
-        }
+        return json.dumps(self, default=lambda o: o.__dict__,
+            sort_keys=True, indent=4)
 
     def __eq__(self, other):
         return self.name == other.name and self.parameters == other.parameters

@@ -56,7 +56,19 @@ kafkacat -C -b localhost -t fasten.RapidPlugin.log -p 0 -o 0 -e
     "metrics": {
       "nloc": 11188,
       "method_count": 1115,
-      "complexity": -1
+      "complexity": -1,
+      "file_list": [
+        {
+            "filename": "fileName.java",
+            "nloc": 108,
+            "function_list": [
+                {
+                    "name": "functionName",
+                    "nloc": 8
+                }
+            ]
+        }
+      ]
     }
   }
 }
