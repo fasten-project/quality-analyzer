@@ -15,7 +15,7 @@ docker-compose -f docker-compose-single-broker.yml up -d
 
 The Kafka cluster will exist on the Docker network ```kafka-docker_default```, where the broker will be reachable at ```kafka:29092```.
 
-From outside the Docker network, the broker is reachable at ```localhost:9202```.
+From outside the Docker network, the broker is reachable at ```localhost:9092```.
 
 # Testing
 

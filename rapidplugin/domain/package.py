@@ -23,8 +23,8 @@ class Package:
         self.version = version
         self.path = path
         self._file_list = []
-        self._func_list = []  # List[Function] extracted from lizard with metrics
-        self._method_list = []  # List[Methods] extracted from cg
+        self._func_list = []  # List[Function] functions identified from Lizard analysis
+        self._method_list = []  # List[Methods] methods identified from cg
         # aggregated metric
         self._method_count = None
         self._nloc = None
@@ -47,19 +47,20 @@ class Package:
         paths = [self.path]
         exc_patterns = ["*/test/*"]
         lans = ["java"]
-        self._nloc = 0
-        self._method_count = 0
-        self._complexity = 0
-        self._token_count = 0
-        analyser = lizard.analyze(paths, exc_patterns, 1, None, lans)
-        for f in analyser:
-            self._file_list.append(File(f))
-            for fun in f.function_list:
-                self._func_list.append(Function(fun))
-            self._nloc = self._nloc + f.nloc
-            self._method_count = self._method_count + len(f.function_list)
-            self._complexity = -1
-            self._token_count = self._token_count + f.token_count
+        if self._nloc is None:
+            self._nloc = 0
+            self._method_count = 0
+            self._complexity = 0
+            self._token_count = 0
+            analyser = lizard.analyze(paths, exc_patterns, 1, None, lans)
+            for f in analyser:
+                self._file_list.append(File(f))
+                for fun in f.function_list:
+                    self._func_list.append(Function(fun))
+                self._nloc = self._nloc + f.nloc
+                self._method_count = self._method_count + len(f.function_list)
+                self._complexity = -1
+                self._token_count = self._token_count + f.token_count
         return
 
     def files(self):
@@ -131,8 +132,7 @@ class Function:
         self.top_nesting_level = func.top_nesting_level
 
     def metrics(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
-            sort_keys=True, indent=4)
+        return self.__dict__
 
     def __eq__(self, other):
         return self.name == other.name and self.parameters == other.parameters
