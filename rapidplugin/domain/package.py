@@ -7,6 +7,8 @@ import logging
 import json
 from typing import List, Set, Dict, Tuple, Optional
 import lizard
+from lizard_ext.lizardio import LizardExtension as FanInOut
+from lizard_ext.lizardnd import LizardExtension as ND
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,7 @@ class Package:
         self._nloc = None
         self._complexity = None
         self._token_count = None
+        self._ND = None
 
     def nloc(self) -> Optional[int]:
         self._calculate_metrics()
@@ -46,21 +49,24 @@ class Package:
     def _calculate_metrics(self):
         paths = [self.path]
         exc_patterns = ["*/test/*"]
+        ext = [FanInOut(), ND()]
         lans = ["java"]
         if self._nloc is None:
             self._nloc = 0
             self._method_count = 0
             self._complexity = 0
             self._token_count = 0
-            analyser = lizard.analyze(paths, exc_patterns, 1, None, lans)
+            self._ND = 0
+            analyser = lizard.analyze(paths, exc_patterns, 1, ext, lans)
             for f in analyser:
                 self._file_list.append(File(f))
                 for fun in f.function_list:
                     self._func_list.append(Function(fun))
-                self._nloc = self._nloc + f.nloc
-                self._method_count = self._method_count + len(f.function_list)
-                self._complexity = -1
-                self._token_count = self._token_count + f.token_count
+                self._nloc += f.nloc
+                self._method_count += len(f.function_list)
+                self._complexity += f.CCN
+                self._ND += f.ND
+                self._token_count += f.token_count
         return
 
     def files(self):
@@ -87,11 +93,21 @@ class File:
         self.nloc = fileinfo.nloc
         self.token_count = fileinfo.token_count
         self.function_list = [Function(x) for x in fileinfo.function_list]
+        self.average_nloc = fileinfo.average_nloc
+        self.average_token_count = fileinfo.average_token_count
+        self.average_cyclomatic_complexity = fileinfo.average_cyclomatic_complexity
+        self.CCN = fileinfo.CCN
+        self.ND = fileinfo.ND
 
     def metrics(self):
         return {
             "filename": self.filename,
             "nloc": self.nloc,
+            "average_nloc": self.average_nloc,
+            "average_token_count": self.average_token_count,
+            "average_cyclomatic_complexity": self.average_cyclomatic_complexity,
+            "CCN": self.CCN,
+            "ND": self.ND,
             "function_list": [fun.metrics() for fun in self.function_list]
         }
 

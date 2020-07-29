@@ -24,7 +24,7 @@ kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 
 kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic fasten.RapidPlugin.log
 
 # add message to topic for consuming
-echo '{"groupId": "fasten-project", "artifactId": "fasten", "version": "1.0.0", "repoPath": "/Users/cgao/workspace/fasten-project/fasten"}' | \
+echo '{"groupId": "fasten-project", "artifactId": "fasten", "version": "1.0.0", "repoPath": "~/repos/fasten"}' | \
     kafka-console-producer.sh --broker-list localhost:9092 --topic fasten.RepoCloner.out
 
 # see if topic added sucessfully
