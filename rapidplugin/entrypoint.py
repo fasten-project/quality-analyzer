@@ -10,7 +10,7 @@ class RapidPlugin(KafkaPlugin):
         super().__init__(bootstrap_servers)
         self.consume_topic = consume_topic  # fasten.RepoCloner.out
         self.produce_topic = produce_topic  # fasten.RapidPlugin.out
-        self.log_topic = log_topic
+        self.log_topic = log_topic      # fasten.RapidPlugin.err
         self.error_topic = error_topic  # fasten.RapidPlugin.err
         self.group_id = group_id
         self.set_consumer()
@@ -37,22 +37,13 @@ class RapidPlugin(KafkaPlugin):
         """
 
     def consume(self, record):
-        # print(record)
-        # message = self.create_message(record, {"status": "begin"})
-        # self.emit_message(self.log_topic, message, "begin", "")
         forge = "mvn"
-        product = record['groupId']+":"+record['artifactId']
+        product = record['groupId']+"."+record['artifactId']
         version = record['version']
-        path = record['repoPath']
+        path = self.get_source_path(record)
         package = Package(forge, product, version, path)
         message = self.create_message(record, {"status": "begin"})
         self.emit_message(self.log_topic, message, "begin", "")
-        # metrics = {
-        #     "nloc": package.nloc(),
-        #     "method_count": package.method_count(),
-        #     "complexity": package.complexity(),
-        #     "file_list": [f.metrics() for f in package.files()],
-        # }
         payload = {
             "product": product,
             "forge": "mvn",
@@ -61,6 +52,18 @@ class RapidPlugin(KafkaPlugin):
         }
         out_message = self.create_message(record, {"payload": payload})
         self.emit_message(self.produce_topic, out_message, "succeed", "")
+
+        """
+        the order to get source code path from different sources: 
+           1. if *-sources.jar is valid, download(get from cache), uncompress and return the path
+           2. else if repoPath is not empty
+            2.1 if commit tag is valid, checkout based on tag and return the path
+            2.2 else check out nearest commit to the release date and return the path
+           3. else return null
+        """
+    def get_source_path(self, record):
+        path = record['repoPath']
+        return path
 
 
 def get_parser():
@@ -73,7 +76,7 @@ def get_parser():
     parser.add_argument('log_topic', type=str, help="Kafka topic to write logs to.")
     parser.add_argument('bootstrap_servers', type=str, help="Kafka servers, comma separated.")
     parser.add_argument('group', type=str, help="Kafka consumer group to which the consumer belongs.")
-    parser.add_argument('sleep_time', type=int, help="Time to sleep in between each scrape (in sec).")
+    # parser.add_argument('sleep_time', type=int, help="Time to sleep in between each scrape (in sec).")
     return parser
 
 
@@ -87,7 +90,7 @@ def main():
     log_topic = args.log_topic
     bootstrap_servers = args.bootstrap_servers
     group = args.group
-    sleep_time = args.sleep_time
+    # sleep_time = args.sleep_time
 
     plugin = RapidPlugin(bootstrap_servers, in_topic, out_topic, log_topic,
                          err_topic, group)
