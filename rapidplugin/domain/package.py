@@ -4,10 +4,9 @@ Module, File, Method.
 """
 
 import logging
-import json
 from typing import List, Set, Dict, Tuple, Optional
 import lizard
-from lizard_ext.lizardio import LizardExtension as FanInOut
+# from lizard_ext.lizardio import LizardExtension as FanInOut
 from lizard_ext.lizardnd import LizardExtension as ND
 
 logger = logging.getLogger(__name__)
@@ -49,7 +48,7 @@ class Package:
     def _calculate_metrics(self):
         paths = [self.path]
         exc_patterns = ["*/test/*"]
-        ext = [FanInOut(), ND()]
+        ext = None
         lans = ["java"]
         if self._nloc is None:
             self._nloc = 0

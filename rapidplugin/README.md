@@ -31,7 +31,7 @@ echo '{"groupId": "fasten-project", "artifactId": "fasten", "version": "1.0.0", 
 kafkacat -C -b localhost -t fasten.RepoCloner.out -p 0 -o 0 -e
 
 # run plugin
-python3 entrypoint.py fasten.RepoCloner.out fasten.RapidPlugin.out fasten.RapidPlugin.err fasten.RapidPlugin.log localhost:9092 mygroup 1
+python3 entrypoint.py fasten.RepoCloner.out fasten.RapidPlugin.out fasten.RapidPlugin.err fasten.RapidPlugin.log localhost:9092 mygroup
 
 # see if topic produced sucessfully
 kafkacat -C -b localhost -t fasten.RapidPlugin.log -p 0 -o 0 -e
@@ -46,7 +46,7 @@ kafkacat -C -b localhost -t fasten.RapidPlugin.log -p 0 -o 0 -e
     "groupId": "fasten-project",
     "artifactId": "fasten",
     "version": "1.0.0",
-    "repoPath": "/Users/cgao/workspace/fasten-project/fasten"
+    "repoPath": "/repos/fasten-project/fasten"
   },
   "created_at": "1595434993.938192",
   "payload": {

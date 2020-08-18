@@ -38,6 +38,15 @@ class RapidPlugin(KafkaPlugin):
 
     def consume(self, record):
         forge = "mvn"
+        # try:
+        #     assert 'groupId' in record
+        #     assert 'artifactId' in record
+        #     assert 'version' in record
+        # except AssertionError as e:
+        #     log_message = self.create_message(record, {"status": "failed"})
+        #     self.emit_message(self.log_topic, log_message, "failed", "")
+        #     err_message = self.create_message(record, {"err": "Key 'groupId', 'artifactId', or 'version' not found."})
+        #     self.emit_message(self.error_topic, err_message, "error", "Parsing json failed.")
         product = record['groupId']+"."+record['artifactId']
         version = record['version']
         path = self.get_source_path(record)
@@ -46,7 +55,8 @@ class RapidPlugin(KafkaPlugin):
         self.emit_message(self.log_topic, message, "begin", "")
         payload = {
             "product": product,
-            "forge": "mvn",
+            "forge": forge,
+            "version": version,
             "generator": "Lizard",
             "metrics": package.metrics()
         }
@@ -62,7 +72,8 @@ class RapidPlugin(KafkaPlugin):
            3. else return null
         """
     def get_source_path(self, record):
-        path = record['repoPath']
+        sourcesURL = record['sourcesUrl'] if 'sourcesUrl' in record else ""
+        path = record['repoPath'] if 'repoPath' in record else ""
         return path
 
 
