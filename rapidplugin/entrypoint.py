@@ -40,6 +40,7 @@ class RapidPlugin(KafkaPlugin):
     def consume(self, record):
         forge = "mvn"
         payload = record['payload'] if 'payload' in record else record
+        self.emit_message(self.log_topic, payload, "debug", "")
         try:
             assert 'groupId' in payload
             assert 'artifactId' in payload
