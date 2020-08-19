@@ -45,6 +45,10 @@ class Package:
         self._calculate_metrics()
         return self._complexity
 
+    def token_count(self) -> Optional:
+        self._calculate_metrics()
+        return self._token_count
+
     def _calculate_metrics(self):
         paths = [self.path]
         exc_patterns = ["*/test/*"]
@@ -79,6 +83,7 @@ class Package:
             "nloc": self.nloc(),
             "method_count": self.method_count(),
             "complexity": self.complexity(),
+            "token_count": self.token_count(),
             "file_list": [f.metrics() for f in self.files()],
         }
 

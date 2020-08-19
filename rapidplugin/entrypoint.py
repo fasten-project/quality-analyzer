@@ -39,15 +39,16 @@ class RapidPlugin(KafkaPlugin):
 
     def consume(self, record):
         forge = "mvn"
+        payload = record['payload'] if 'payload' in record else record
         try:
-            assert 'groupId' in record
-            assert 'artifactId' in record
-            assert 'version' in record
-            product = record['groupId'] + "." + record['artifactId']
-            group = record['groupId']
-            artifact = record['artifactId']
-            version = record['version']
-            path = self.get_source_path(record)
+            assert 'groupId' in payload
+            assert 'artifactId' in payload
+            assert 'version' in payload
+            product = payload['groupId'] + "." + payload['artifactId']
+            group = payload['groupId']
+            artifact = payload['artifactId']
+            version = payload['version']
+            path = self.get_source_path(payload)
             package = Package(forge, product, version, path)
             message = self.create_message(record, {"status": "begin"})
             self.emit_message(self.log_topic, message, "begin", "")
@@ -76,9 +77,9 @@ class RapidPlugin(KafkaPlugin):
             2.2 else check out nearest commit to the release date and return the path
            3. else return null
         """
-    def get_source_path(self, record):
-        sourcesUrl = record['sourcesUrl'] if 'sourcesUrl' in record else ""
-        path = record['repoPath'] if 'repoPath' in record else ""
+    def get_source_path(self, payload):
+        sourcesUrl = payload['sourcesUrl'] if 'sourcesUrl' in payload else ""
+        path = payload['repoPath'] if 'repoPath' in payload else ""
         return path
 
 
