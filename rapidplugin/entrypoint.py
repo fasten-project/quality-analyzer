@@ -1,6 +1,7 @@
 import argparse
 from fasten.plugins.kafka import KafkaPlugin
 from domain.package import Package
+from time import sleep
 
 
 class RapidPlugin(KafkaPlugin):
@@ -38,30 +39,34 @@ class RapidPlugin(KafkaPlugin):
 
     def consume(self, record):
         forge = "mvn"
-        # try:
-        #     assert 'groupId' in record
-        #     assert 'artifactId' in record
-        #     assert 'version' in record
-        # except AssertionError as e:
-        #     log_message = self.create_message(record, {"status": "failed"})
-        #     self.emit_message(self.log_topic, log_message, "failed", "")
-        #     err_message = self.create_message(record, {"err": "Key 'groupId', 'artifactId', or 'version' not found."})
-        #     self.emit_message(self.error_topic, err_message, "error", "Parsing json failed.")
-        product = record['groupId']+"."+record['artifactId']
-        version = record['version']
-        path = self.get_source_path(record)
-        package = Package(forge, product, version, path)
-        message = self.create_message(record, {"status": "begin"})
-        self.emit_message(self.log_topic, message, "begin", "")
-        payload = {
-            "product": product,
-            "forge": forge,
-            "version": version,
-            "generator": "Lizard",
-            "metrics": package.metrics()
-        }
-        out_message = self.create_message(record, {"payload": payload})
-        self.emit_message(self.produce_topic, out_message, "succeed", "")
+        try:
+            assert 'groupId' in record
+            assert 'artifactId' in record
+            assert 'version' in record
+            product = record['groupId'] + "." + record['artifactId']
+            group = record['groupId']
+            artifact = record['artifactId']
+            version = record['version']
+            path = self.get_source_path(record)
+            package = Package(forge, product, version, path)
+            message = self.create_message(record, {"status": "begin"})
+            self.emit_message(self.log_topic, message, "begin", "")
+            payload = {
+                "forge": forge,
+                "groupId": group,
+                "artifactId": artifact,
+                "version": version,
+                "generator": "Lizard",
+                "metrics": package.metrics()
+            }
+            out_message = self.create_message(record, {"payload": payload})
+            self.emit_message(self.produce_topic, out_message, "succeed", "")
+        except AssertionError as e:
+            log_message = self.create_message(record, {"status": "failed"})
+            self.emit_message(self.log_topic, log_message, "failed", "Parsing json failed.")
+            err_message = self.create_message(record, {"err": "Key 'groupId', 'artifactId', or 'version' not found."})
+            self.emit_message(self.error_topic, err_message, "error", "Json format error.")
+
 
         """
         the order to get source code path from different sources: 
@@ -72,7 +77,7 @@ class RapidPlugin(KafkaPlugin):
            3. else return null
         """
     def get_source_path(self, record):
-        sourcesURL = record['sourcesUrl'] if 'sourcesUrl' in record else ""
+        sourcesUrl = record['sourcesUrl'] if 'sourcesUrl' in record else ""
         path = record['repoPath'] if 'repoPath' in record else ""
         return path
 
@@ -87,7 +92,7 @@ def get_parser():
     parser.add_argument('log_topic', type=str, help="Kafka topic to write logs to.")
     parser.add_argument('bootstrap_servers', type=str, help="Kafka servers, comma separated.")
     parser.add_argument('group', type=str, help="Kafka consumer group to which the consumer belongs.")
-    # parser.add_argument('sleep_time', type=int, help="Time to sleep in between each scrape (in sec).")
+    parser.add_argument('sleep_time', type=int, help="Time to sleep in between each scrape (in sec).")
     return parser
 
 
@@ -101,7 +106,7 @@ def main():
     log_topic = args.log_topic
     bootstrap_servers = args.bootstrap_servers
     group = args.group
-    # sleep_time = args.sleep_time
+    sleep_time = args.sleep_time
 
     plugin = RapidPlugin(bootstrap_servers, in_topic, out_topic, log_topic,
                          err_topic, group)
@@ -109,6 +114,7 @@ def main():
     # Run forever
     while True:
         plugin.consume_messages()
+        sleep(sleep_time)
 
 
 if __name__ == "__main__":
