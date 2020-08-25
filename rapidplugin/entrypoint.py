@@ -2,18 +2,22 @@ import argparse
 from fasten.plugins.kafka import KafkaPlugin
 from domain.package import Package
 from time import sleep
+from zipfile import ZipFile
+import requests
+import os
 
 
 class RapidPlugin(KafkaPlugin):
 
     def __init__(self, bootstrap_servers, consume_topic, produce_topic,
-                 log_topic, error_topic, group_id):
+                 log_topic, error_topic, group_id, base_dir):
         super().__init__(bootstrap_servers)
         self.consume_topic = consume_topic  # fasten.RepoCloner.out
         self.produce_topic = produce_topic  # fasten.RapidPlugin.out
         self.log_topic = log_topic      # fasten.RapidPlugin.err
         self.error_topic = error_topic  # fasten.RapidPlugin.err
         self.group_id = group_id
+        self.base_dir = base_dir
         self.set_consumer()
         self.set_producer()
 
@@ -40,7 +44,6 @@ class RapidPlugin(KafkaPlugin):
     def consume(self, record):
         forge = "mvn"
         payload = record['payload'] if 'payload' in record else record
-        self.emit_message(self.log_topic, payload, "debug", "")
         try:
             assert 'groupId' in payload
             assert 'artifactId' in payload
@@ -49,7 +52,7 @@ class RapidPlugin(KafkaPlugin):
             group = payload['groupId']
             artifact = payload['artifactId']
             version = payload['version']
-            path = self.get_source_path(payload)
+            path = self._get_source_path(payload)
             package = Package(forge, product, version, path)
             message = self.create_message(record, {"status": "begin"})
             self.emit_message(self.log_topic, message, "begin", "")
@@ -68,20 +71,37 @@ class RapidPlugin(KafkaPlugin):
             self.emit_message(self.log_topic, log_message, "failed", "Parsing json failed.")
             err_message = self.create_message(record, {"err": "Key 'groupId', 'artifactId', or 'version' not found."})
             self.emit_message(self.error_topic, err_message, "error", "Json format error.")
-
+        # delete source code directory
 
         """
         the order to get source code path from different sources: 
-           1. if *-sources.jar is valid, download(get from cache), uncompress and return the path
-           2. else if repoPath is not empty
-            2.1 if commit tag is valid, checkout based on tag and return the path
-            2.2 else check out nearest commit to the release date and return the path
+           [x] 1. if *-sources.jar is valid, download(get from cache), uncompress and return the path
+           [ ] 2. else if repoPath is not empty
+            [ ] 2.1 if commit tag is valid, checkout based on tag and return the path
+            [ ] 2.2 else check out nearest commit to the release date and return the path
            3. else return null
         """
-    def get_source_path(self, payload):
+    def _get_source_path(self, payload):
         sourcesUrl = payload['sourcesUrl'] if 'sourcesUrl' in payload else ""
-        path = payload['repoPath'] if 'repoPath' in payload else ""
+        path = self._download_jar(sourcesUrl) if sourcesUrl != "" else ""
+        if path == "":
+            path = payload['repoPath'] if 'repoPath' in payload else ""
         return path
+
+    def _download_jar(self, url):
+        if not self.base_dir.exists():
+            self.out_dir.mkdir(parents=True)
+        file_name = self.base_dir/url.split('/')[-1]
+        tmp_dir = self.base_dir/'tmp'
+        r = requests.get(url, allow_redirects=True)
+        open(file_name, 'wb').write(r.content)
+        with ZipFile(file_name, 'r') as zipObj:
+            zipObj.extractall(tmp_dir)
+        # delete jar file
+        return tmp_dir
+
+    def _checkout_version(self, repoPath):
+        pass
 
 
 def get_parser():
@@ -95,6 +115,7 @@ def get_parser():
     parser.add_argument('bootstrap_servers', type=str, help="Kafka servers, comma separated.")
     parser.add_argument('group', type=str, help="Kafka consumer group to which the consumer belongs.")
     parser.add_argument('sleep_time', type=int, help="Time to sleep in between each scrape (in sec).")
+    parser.add_argument('base_dir', type=str, help="Base directory for temporary store downloaded source code.")
     return parser
 
 
@@ -109,9 +130,10 @@ def main():
     bootstrap_servers = args.bootstrap_servers
     group = args.group
     sleep_time = args.sleep_time
+    base_dir = args.base_dir
 
     plugin = RapidPlugin(bootstrap_servers, in_topic, out_topic, log_topic,
-                         err_topic, group)
+                         err_topic, group, base_dir)
 
     # Run forever
     while True:
