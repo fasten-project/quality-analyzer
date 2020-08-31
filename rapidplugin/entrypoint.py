@@ -1,7 +1,11 @@
+import logging
 import argparse
 from fasten.plugins.kafka import KafkaPlugin
 from domain.package import Package
 from time import sleep
+from kafka import KafkaProducer
+
+logger = logging.getLogger(__name__)
 
 
 class RapidPlugin(KafkaPlugin):
@@ -40,7 +44,7 @@ class RapidPlugin(KafkaPlugin):
     def consume(self, record):
         forge = "mvn"
         payload = record['payload'] if 'payload' in record else record
-        self.emit_message(self.log_topic, self.get_source_path(payload), "debug", "--")
+        self.emit_message(self.log_topic, self.get_source_path(payload), "[DEBUG]", self.get_source_path(payload))
         try:
             assert 'groupId' in payload
             assert 'artifactId' in payload
@@ -51,8 +55,8 @@ class RapidPlugin(KafkaPlugin):
             version = payload['version']
             path = self.get_source_path(payload)
             package = Package(forge, product, version, path)
-            message = self.create_message(record, {"status": "begin"})
-            self.emit_message(self.log_topic, message, "begin", "")
+            message = self.create_message(record, {"Status": "Begin"})
+            self.emit_message(self.log_topic, message, "Begin", payload)
             payload = {
                 "forge": forge,
                 "groupId": group,
@@ -61,14 +65,28 @@ class RapidPlugin(KafkaPlugin):
                 "generator": "Lizard",
                 "metrics": package.metrics()
             }
-            out_message = self.create_message(record, {"payload": payload})
-            self.emit_message(self.produce_topic, out_message, "succeed", "")
+            out_message = self.create_message(record, {"payload": payload['metrics']})
+            self.emit_message(self.produce_topic, out_message, "succeed", out_message['payload'])
         except AssertionError as e:
-            log_message = self.create_message(record, {"status": "failed"})
-            self.emit_message(self.log_topic, log_message, "failed", "Parsing json failed.")
-            err_message = self.create_message(record, {"err": "Key 'groupId', 'artifactId', or 'version' not found."})
-            self.emit_message(self.error_topic, err_message, "error", "Json format error.")
+            log_message = self.create_message(record, {"Status": "FAILED"})
+            self.emit_message(self.log_topic, log_message, "[FAILED]", "Parsing json failed.")
+            err_message = self.create_message(record, {"Err": "Key 'groupId', 'artifactId', or 'version' not found."})
+            self.emit_message(self.error_topic, err_message, "[ERROR]", "Json format error.")
 
+    def set_producer(self):
+        """Set producer to sent messages to produce_topic.
+        """
+        try:
+            assert self.produce_topic is not None
+            assert self.bootstrap_servers is not None
+        except (AssertionError, NameError) as e:
+            self.err("You should have set produce_topic, bootstrap_servers, ")
+            raise e
+        self.producer = KafkaProducer(
+            bootstrap_servers=self.bootstrap_servers.split(','),
+            max_request_size=15728640,
+            value_serializer=lambda x: x.encode('utf-8')
+        )
 
         """
         the order to get source code path from different sources: 
@@ -79,7 +97,7 @@ class RapidPlugin(KafkaPlugin):
            3. else return null
         """
     def get_source_path(self, payload):
-        sourcesUrl = payload['sourcesUrl'] if 'sourcesUrl' in payload else ""
+        sources_url = payload['sourcesUrl'] if 'sourcesUrl' in payload else ""
         path = payload['repoPath'] if 'repoPath' in payload else ""
         return path
 
