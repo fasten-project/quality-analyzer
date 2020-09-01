@@ -65,7 +65,7 @@ class RapidPlugin(KafkaPlugin):
                 "generator": "Lizard",
                 "metrics": package.metrics()
             }
-            out_message = self.create_message(record, {"payload": payload['metrics']})
+            out_message = self.create_message(record, {"payload": payload})
             self.emit_message(self.produce_topic, out_message, "succeed", out_message['payload'])
         except AssertionError as e:
             log_message = self.create_message(record, {"Status": "FAILED"})

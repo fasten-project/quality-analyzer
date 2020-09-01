@@ -1,2 +1,2 @@
 fasten
-lizard
+git+git://github.com/terryyin/lizard/releases/tag/1.17.5#egg=lizard
