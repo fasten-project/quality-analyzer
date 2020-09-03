@@ -4,6 +4,7 @@ from fasten.plugins.kafka import KafkaPlugin
 from domain.package import Package
 from time import sleep
 from kafka import KafkaProducer
+import kafka.errors as Errors
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class RapidPlugin(KafkaPlugin):
     def consume(self, record):
         forge = "mvn"
         payload = record['payload'] if 'payload' in record else record
-        self.emit_message(self.log_topic, self.get_source_path(payload), "[DEBUG]", self.get_source_path(payload))
+        # self.emit_message(self.log_topic, self.get_source_path(payload), "[DEBUG]", self.get_source_path(payload))
         try:
             assert 'groupId' in payload
             assert 'artifactId' in payload
@@ -72,6 +73,11 @@ class RapidPlugin(KafkaPlugin):
             self.emit_message(self.log_topic, log_message, "[FAILED]", "Parsing json failed.")
             err_message = self.create_message(record, {"Err": "Key 'groupId', 'artifactId', or 'version' not found."})
             self.emit_message(self.error_topic, err_message, "[ERROR]", "Json format error.")
+        except Errors.BrokerResponseError as e:
+            log_message = self.create_message(record, {"Status": "FAILED"})
+            self.emit_message(self.log_topic, log_message, "[FAILED]", "Sending message failed.")
+            err_message = self.create_message(record, {"Err": "Message too large."})
+            self.emit_message(self.error_topic, err_message, "[ERROR]", "MessageSizeTooLargeError.")
 
     def set_producer(self):
         """Set producer to sent messages to produce_topic.
@@ -134,7 +140,7 @@ def main():
     # Run forever
     while True:
         plugin.consume_messages()
-        sleep(sleep_time)
+        # sleep(sleep_time)
 
 
 if __name__ == "__main__":
