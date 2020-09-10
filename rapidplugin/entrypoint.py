@@ -5,11 +5,11 @@ from domain.package import Package
 from time import sleep
 from kafka import KafkaProducer
 import kafka.errors as Errors
-
-logger = logging.getLogger(__name__)
 from zipfile import ZipFile
 import requests
 import os
+
+logger = logging.getLogger(__name__)
 
 
 class RapidPlugin(KafkaPlugin):
@@ -107,15 +107,15 @@ class RapidPlugin(KafkaPlugin):
            3. else return null
         """
     def _get_source_path(self, payload):
-        sourcesUrl = payload['sourcesUrl'] if 'sourcesUrl' in payload else ""
-        path = self._download_jar(sourcesUrl) if sourcesUrl != "" else ""
+        sources_url = payload['sourcesUrl'] if 'sourcesUrl' in payload else ""
+        path = self._download_jar(sources_url) if sources_url != "" else ""
         if path == "":
             path = payload['repoPath'] if 'repoPath' in payload else ""
         return path
 
     def _download_jar(self, url):
         if not self.base_dir.exists():
-            self.out_dir.mkdir(parents=True)
+            self.base_dir.mkdir(parents=True)
         file_name = self.base_dir/url.split('/')[-1]
         tmp_dir = self.base_dir/'tmp'
         r = requests.get(url, allow_redirects=True)
@@ -125,7 +125,7 @@ class RapidPlugin(KafkaPlugin):
         # delete jar file
         return tmp_dir
 
-    def _checkout_version(self, repoPath):
+    def _checkout_version(self, repo_path):
         pass
 
 
@@ -158,7 +158,7 @@ def main():
     base_dir = args.base_dir
 
     plugin = RapidPlugin(bootstrap_servers, in_topic, out_topic, log_topic,
-                         err_topic, group, base_dir)
+                         err_topic, group, sleep_time, base_dir)
 
     # Run forever
     while True:
@@ -168,4 +168,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
