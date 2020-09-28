@@ -66,9 +66,10 @@ class Package:
 
     def _calculate_metrics(self):
         paths = [self.path]
-        exc_patterns = ["*/test/*"]
+        # exc_patterns = ["*/test/*"]
+        exc_patterns = None
         ext = None
-        lans = ["java"]
+        lans = ["java", "python", "c"]
         if self._nloc is None:
             self._nloc = 0
             self._method_count = 0

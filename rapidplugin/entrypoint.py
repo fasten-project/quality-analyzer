@@ -29,10 +29,10 @@ logger = logging.getLogger(__name__)
 
 class RapidPlugin(KafkaPlugin):
 
-    def __init__(self, bootstrap_servers, consume_topic, produce_topic,
+    def __init__(self, bootstrap_servers, consume_topics, produce_topic,
                  log_topic, error_topic, group_id, sleep_time, base_dir):
         super().__init__(bootstrap_servers)
-        self.consume_topic = consume_topic  # fasten.RepoCloner.out
+        self.consume_topics = consume_topics  # fasten.RepoCloner.out
         self.produce_topic = produce_topic  # fasten.RapidPlugin.out
         self.log_topic = log_topic      # fasten.RapidPlugin.err
         self.error_topic = error_topic  # fasten.RapidPlugin.err
@@ -63,7 +63,19 @@ class RapidPlugin(KafkaPlugin):
         """
 
     def consume(self, record):
-        forge = "mvn"
+        forge = record['forge']
+        if forge == "mvn":
+            self._consume_java(record)
+        elif forge == "pypi":
+            self._consume_python(record)
+        elif forge == "debian":
+            self._consume_c(record)
+        else:
+            err_message = self.create_message(record, {"Err": "Unknown forge."})
+            self.emit_message(self.error_topic, err_message, "[ERROR]", "Forge not supported.")
+
+    def _consume_java(self, record):
+        forge = record['forge']
         payload = record['payload'] if 'payload' in record else record
         try:
             assert 'groupId' in payload
@@ -113,14 +125,82 @@ class RapidPlugin(KafkaPlugin):
             value_serializer=lambda x: x.encode('utf-8')
         )
 
-        """
-        the order to get source code path from different sources: 
-           [x] 1. if *-sources.jar is valid, download(get from cache), uncompress and return the path
-           [ ] 2. else if repoPath is not empty
-            [ ] 2.1 if commit tag is valid, checkout based on tag and return the path
-            [ ] 2.2 else check out nearest commit to the release date and return the path
-           3. else return null
-        """
+    def _consume_c(self, record):
+        forge = record['forge']
+        payload = record['payload'] if 'payload' in record else record
+        try:
+            assert 'product' in payload
+            assert 'version' in payload
+            product = payload['product']
+            version = payload['version']
+            arch = payload['arch']
+            release = payload['release']
+            path = payload['sourcePath']
+            package = Package(forge, product, version, path)
+            message = self.create_message(record, {"Status": "Begin"})
+            self.emit_message(self.log_topic, message, "Begin", payload)
+            payload = {
+                "forge": forge,
+                "product": product,
+                "version": version,
+                "arch": arch,
+                "release": release,
+                "generator": "Lizard",
+                "metrics": package.metrics()
+            }
+            out_message = self.create_message(record, {"payload": payload})
+            self.emit_message(self.produce_topic, out_message, "succeed", out_message['payload'])
+        except AssertionError as e:
+            log_message = self.create_message(record, {"Status": "FAILED"})
+            self.emit_message(self.log_topic, log_message, "[FAILED]", "Parsing json failed.")
+            err_message = self.create_message(record, {"Err": "Key 'product', or 'version' not found."})
+            self.emit_message(self.error_topic, err_message, "[ERROR]", "Json format error.")
+        except Errors.BrokerResponseError as e:
+            log_message = self.create_message(record, {"Status": "FAILED"})
+            self.emit_message(self.log_topic, log_message, "[FAILED]", "Sending message failed.")
+            err_message = self.create_message(record, {"Err": "Message too large."})
+            self.emit_message(self.error_topic, err_message, "[ERROR]", "MessageSizeTooLargeError.")
+
+    def _consume_python(self, record):
+        forge = record['forge']
+        payload = record['payload'] if 'payload' in record else record
+        try:
+            assert 'product' in payload
+            assert 'version' in payload
+            product = payload['product']
+            version = payload['version']
+            path = payload['sourcePath']
+            package = Package(forge, product, version, path)
+            message = self.create_message(record, {"Status": "Begin"})
+            self.emit_message(self.log_topic, message, "Begin", payload)
+            payload = {
+                "forge": forge,
+                "product": product,
+                "version": version,
+                "generator": "Lizard",
+                "metrics": package.metrics()
+            }
+            out_message = self.create_message(record, {"payload": payload})
+            self.emit_message(self.produce_topic, out_message, "succeed", out_message['payload'])
+        except AssertionError as e:
+            log_message = self.create_message(record, {"Status": "FAILED"})
+            self.emit_message(self.log_topic, log_message, "[FAILED]", "Parsing json failed.")
+            err_message = self.create_message(record, {"Err": "Key 'product', or 'version' not found."})
+            self.emit_message(self.error_topic, err_message, "[ERROR]", "Json format error.")
+        except Errors.BrokerResponseError as e:
+            log_message = self.create_message(record, {"Status": "FAILED"})
+            self.emit_message(self.log_topic, log_message, "[FAILED]", "Sending message failed.")
+            err_message = self.create_message(record, {"Err": "Message too large."})
+            self.emit_message(self.error_topic, err_message, "[ERROR]", "MessageSizeTooLargeError.")
+
+    """
+    the order to get source code path from different sources: 
+       [x] 1. if *-sources.jar is valid, download(get from cache), uncompress and return the path
+       [ ] 2. else if repoPath is not empty
+        [ ] 2.1 if commit tag is valid, checkout based on tag and return the path
+        [ ] 2.2 else check out nearest commit to the release date and return the path
+       3. else return null
+    """
     def _get_source_path(self, payload):
         sources_url = payload['sourcesUrl'] if 'sourcesUrl' in payload else ""
         path = self._download_jar(sources_url) if sources_url != "" else ""
@@ -140,7 +220,7 @@ class RapidPlugin(KafkaPlugin):
         # delete jar file
         return tmp_dir
 
-    def _checkout_version(self, repo_path):
+    def _checkout_version(self, repo_path, version_tag):
         pass
 
 
