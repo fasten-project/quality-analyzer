@@ -69,7 +69,7 @@ class Package:
         # exc_patterns = ["*/test/*"]
         exc_patterns = None
         ext = None
-        lans = ["java", "python", "c"]
+        lans = ["java", "python", "cpp"]
         if self._nloc is None:
             self._nloc = 0
             self._method_count = 0
@@ -174,8 +174,6 @@ class Function:
         return self.name == other.name and self.parameters == other.parameters
 
     def __hash__(self):
-        # parameters are used in hashing in order to
-        # prevent collisions when overloading method names
         return hash(('name', self.name,
                      'long_name', self.long_name,
                      'params', (x for x in self.parameters)))

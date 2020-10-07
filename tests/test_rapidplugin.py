@@ -16,12 +16,33 @@
 import pytest
 from rapidplugin.entrypoint import RapidPlugin
 
+
 @pytest.fixture
 def plugin():
     plugin = RapidPlugin(base_dir="src")
     return plugin
 
 
-def test_no_sourcesURL(payload: str):
-    path = plugin()._
+class TestGetSourceCode:
+    def test_no_sources_url(self, payload: str):
+        path = plugin()._get_source_path(payload)
+        assert True
 
+    def test_invalid_sources_url(self, payload: str):
+        path = plugin()._get_source_path(payload)
+        assert True
+
+    def test_no_repo_url(self, payload: str):
+        path = plugin()._get_source_path(payload)
+        assert True
+
+
+class TestConsumeRecord:
+    def test_maven(self, record):
+        assert True
+
+    def test_pypi(self, record):
+        assert True
+
+    def test_debian(self, record):
+        assert True

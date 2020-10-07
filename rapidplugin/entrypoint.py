@@ -32,7 +32,7 @@ class RapidPlugin(KafkaPlugin):
     def __init__(self, bootstrap_servers, consume_topics, produce_topic,
                  log_topic, error_topic, group_id, sleep_time, base_dir):
         super().__init__(bootstrap_servers)
-        self.consume_topics = consume_topics  # fasten.RepoCloner.out
+        self.consume_topics = consume_topics  # fasten.RepoCloner.out, fasten.debian.cg.2, fasten.pycg.out
         self.produce_topic = produce_topic  # fasten.RapidPlugin.out
         self.log_topic = log_topic      # fasten.RapidPlugin.err
         self.error_topic = error_topic  # fasten.RapidPlugin.err
@@ -54,13 +54,13 @@ class RapidPlugin(KafkaPlugin):
     def free_resource(self):
         pass
 
-        """
-        consume topic: 
-           1. extract package info from Kafka topic 'fasten.repoCloner.out'
-           2. get the link of source code
-           3. calculate quality metrics
-           4. send to Kafka topic 'fasten.RapidPlugin.out (err, log)'
-        """
+    """
+    consume topic: 
+       1. extract package info from Kafka topic 'fasten.repoCloner.out'
+       2. get the link of source code
+       3. calculate quality metrics
+       4. send to Kafka topic 'fasten.RapidPlugin.out (err, log)'
+    """
 
     def consume(self, record):
         forge = record['forge']
