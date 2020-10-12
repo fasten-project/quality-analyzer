@@ -13,10 +13,12 @@
 # limitations under the License.
 #
 
+import copy
 import logging
 import argparse
 from fasten.plugins.kafka import KafkaPlugin
-from domain.package import Package
+from rapidplugin.domain.package import Package
+from rapidplugin.analysis.lizard_analyzer import LizardPackage
 from time import sleep
 from kafka import KafkaProducer
 import kafka.errors as Errors
@@ -29,16 +31,43 @@ logger = logging.getLogger(__name__)
 
 class RapidPlugin(KafkaPlugin):
 
-    def __init__(self, bootstrap_servers, consume_topics, produce_topic,
-                 log_topic, error_topic, group_id, sleep_time, base_dir):
-        super().__init__(bootstrap_servers)
-        self.consume_topics = consume_topics  # fasten.RepoCloner.out, fasten.debian.cg.2, fasten.pycg.out
-        self.produce_topic = produce_topic  # fasten.RapidPlugin.out
-        self.log_topic = log_topic      # fasten.RapidPlugin.err
-        self.error_topic = error_topic  # fasten.RapidPlugin.err
-        self.group_id = group_id
-        self.sleep_time = sleep_time
-        self.base_dir = base_dir
+    # def __init__(self, bootstrap_servers, consume_topics, produce_topic,
+    #              log_topic, error_topic, group_id, sleep_time, base_dir):
+    #     super().__init__(bootstrap_servers)
+    #     self.consume_topics = consume_topics  # fasten.RepoCloner.out
+    #     self.produce_topic = produce_topic  # fasten.RapidPlugin.out
+    #     self.log_topic = log_topic      # fasten.RapidPlugin.err
+    #     self.error_topic = error_topic  # fasten.RapidPlugin.err
+    #     self.group_id = group_id
+    #     self.sleep_time = sleep_time
+    #     self.base_dir = base_dir
+    #     self.set_consumer()
+    #     self.set_producer()
+    DEFAULT_CONFIG = {
+        'bootstrap_servers': 'localhost',
+        'produce_topic': 'fasten.RapidPlugin.out',
+        'log_topic': 'fasten.RapidPlugin.log',
+        'err_topic': 'fasten.RapidPlugin.err',
+        'group_id': 'rapid-plugin',
+        'sleep_time': 1,
+        'base_dir': None,
+        'analyzer': 'lizard'
+    }
+
+    def __init__(self, *topics, **configs):
+        extra_configs = set(configs).difference(self.DEFAULT_CONFIG)
+        if extra_configs:
+            raise Errors.KafkaConfigurationError("Unrecognized configs: %s" % (extra_configs,))
+        self.config = copy.copy(self.DEFAULT_CONFIG)
+        self.config.update(configs)
+        self.consume_topics = set(topics)
+        self.produce_topic = self.config['produce_topic']
+        self.log_topic = self.config['log_topic']
+        self.error_topic = self.config['err_topic']
+        self.group_id = self.config['group_id']
+        self.sleep_time = self.config['sleep_time']
+        self.base_dir = self.config['base_dir']
+        super().__init__(self.config['bootstrap_servers'])
         self.set_consumer()
         self.set_producer()
 
@@ -64,6 +93,9 @@ class RapidPlugin(KafkaPlugin):
 
     def consume(self, record):
         forge = record['forge']
+        out_message = None
+        log_message = None
+        err_message = None
         if forge == "mvn":
             self._consume_java(record)
         elif forge == "pypi":
@@ -86,7 +118,7 @@ class RapidPlugin(KafkaPlugin):
             artifact = payload['artifactId']
             version = payload['version']
             path = self._get_source_path(payload)
-            package = Package(forge, product, version, path)
+            package = LizardPackage(forge, product, version, path)
             message = self.create_message(record, {"Status": "Begin"})
             self.emit_message(self.log_topic, message, "Begin", payload)
             payload = {
@@ -225,6 +257,7 @@ class RapidPlugin(KafkaPlugin):
 
 
 def get_parser():
+    # TODO: modify argument parsing
     parser = argparse.ArgumentParser(
         "RAPID consumer"
     )
@@ -242,15 +275,6 @@ def get_parser():
 def main():
     parser = get_parser()
     args = parser.parse_args()
-
-    in_topic = args.in_topic
-    out_topic = args.out_topic
-    err_topic = args.err_topic
-    log_topic = args.log_topic
-    bootstrap_servers = args.bootstrap_servers
-    group = args.group
-    sleep_time = args.sleep_time
-    base_dir = args.base_dir
 
     plugin = RapidPlugin(bootstrap_servers, in_topic, out_topic, log_topic,
                          err_topic, group, sleep_time, base_dir)

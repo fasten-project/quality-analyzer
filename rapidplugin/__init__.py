@@ -1,2 +1,2 @@
-from domain.package import Package
-import rapidplugin.entrypoint
+import rapidplugin.domain
+import rapidplugin.analysis
