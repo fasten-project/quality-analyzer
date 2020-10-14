@@ -38,11 +38,5 @@ class TestGetSourceCode:
 
 
 class TestConsumeRecord:
-    def test_maven(self, record):
-        assert True
-
-    def test_pypi(self, record):
-        assert True
-
-    def test_debian(self, record):
+    def test_analyze(self, record):
         assert True

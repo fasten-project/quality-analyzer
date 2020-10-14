@@ -15,6 +15,8 @@
 
 import logging
 import lizard
+import datetime
+
 
 from rapidplugin.domain.package import Package, File, Function
 
@@ -23,12 +25,14 @@ class LizardPackage(Package):
 
     def __init__(self, forge, product, version, path):
         super.__init__(forge, product, version, path)
+        self.timestamp = None
 
     def _calculate_metrics(self):
         paths = [self.source_pathpath]
         exc_patterns = None
         ext = None
         lans = ["java", "python", "cpp"]
+        self.timestamp = str(datetime.datetime.now().timestamp())
         if self._nloc is None:
             self._nloc = 0
             self._method_count = 0
@@ -50,7 +54,8 @@ class LizardPackage(Package):
     def _get_analyzer(self):
         return {
             "analyzer_name": "lizard",
-            "analyzer_version": lizard.version
+            "analyzer_version": lizard.version,
+            "analysis_timestamp": self.timestamp
         }
 
 

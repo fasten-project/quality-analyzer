@@ -27,10 +27,7 @@ logger = logging.getLogger(__name__)
 
 class Package(ABC):
     """
-    This class defines the metadata of a package,
-    extracted from FASTEN call graph Json file.
-
-    :argument
+    This class defines the metadata of a package.
     """
 
     def __init__(self, forge, product, version, path):
@@ -82,6 +79,19 @@ class Package(ABC):
     def functions(self):
         return self._func_list
 
+    def metadata(self):
+        language = {
+            'mvn': 'java',
+            'debian': 'c',
+            'PyPI': 'python'
+        }
+        return {
+            "product": self.product,
+            "version": self.version,
+            "forge": self.forge,
+            "language": language[self.forge]
+        }.update(self._get_analyzer())
+
     def metrics(self):
         return {
             "nloc": self.nloc(),
@@ -92,10 +102,10 @@ class Package(ABC):
         }
 
 
-class File:
+class File(ABC):
     def __init__(self):
         """
-        Initialize a function object. This is extracted from Lizard
+        Initialize a function object.
         """
         self.filename = None
         self.nloc = None
@@ -121,16 +131,12 @@ class File:
 
 
 class Dependency:
-    """
-    This class defines the (direct?) dependencies of a package,
-    extracted from FASTEN call graph Json file.
-    """
 
     def __int__(self):
         pass
 
 
-class Function:
+class Function(ABC):
     """
     This class represents a function in a package. Contains various information,
     extracted through Lizard.
@@ -138,7 +144,7 @@ class Function:
 
     def __init__(self):
         """
-        Initialize a function object. This is calculated using Lizard
+        Initialize a function object.
         """
         self.name = None
         self.long_name = None
@@ -155,8 +161,25 @@ class Function:
         self.length = None
         self.top_nesting_level = None
 
+    def metadata(self):
+        return {
+            "filename": self.filename,
+            "name": self.name,
+            "long_name": self.long_name,
+            "start_line": self.start_line,
+            "end_line": self.end_line
+        }
+
     def metrics(self):
-        return self.__dict__
+        return {
+            "metrics": {
+                "nloc": self.nloc,
+                "complexity": self.complexity,
+                "token_count": self.token_count,
+                "parameters": self.parameters,
+                "length": self.length
+            }
+        }
 
     def __eq__(self, other):
         return self.name == other.name and self.parameters == other.parameters
