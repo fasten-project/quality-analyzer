@@ -26,12 +26,12 @@ class RapidPlugin(KafkaPlugin):
 
     def __init__(self, config):
         self.config = config
-        super().__init__(self.config.get_config_value['bootstrap_servers'])
+        super().__init__(self.config.get_config_value('bootstrap_servers'))
         self.consume_topic = self.config.get_config_value('consume_topic')
-        self.produce_topic = self.config.get_config_value['produce_topic']
-        self.log_topic = self.config.get_config_value['log_topic']
-        self.error_topic = self.config.get_config_value['err_topic']
-        self.group_id = self.config.get_config_value['group_id']
+        self.produce_topic = self.config.get_config_value('produce_topic')
+        self.log_topic = self.config.get_config_value('log_topic')
+        self.error_topic = self.config.get_config_value('err_topic')
+        self.group_id = self.config.get_config_value('group_id')
         self.set_consumer()
         self.set_producer()
 
