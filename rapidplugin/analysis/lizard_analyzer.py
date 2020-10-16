@@ -29,7 +29,7 @@ class LizardPackage(Package):
         self._calculate_metrics()
 
     def _calculate_metrics(self):
-        paths = [self.source_pathpath]
+        paths = [self.source_path]
         exc_patterns = None
         ext = None
         lans = ["java", "python", "cpp"]
