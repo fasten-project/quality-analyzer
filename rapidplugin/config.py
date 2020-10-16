@@ -18,13 +18,18 @@ class Config():
     TODO
     '''
     config_dict = {}
+    config_name = ""
     
-    def __init__(self):
-        pass
+    def __init__(self, name = ""):
+        self.config_name = name
 
     def add_config_value(self, var, value):
         self.config_dict[var] = value
+
+    def update_config_value(self, var, value):
+        self.add_config_value(var, value)
         
     def get_config_value(self, var):
+        assert var in self.config_dict, "No value for key " + var + " in config " + "config_name"
         return self.config_dict[var]
         

@@ -21,47 +21,60 @@ from config import Config
 
 logger = logging.getLogger(__name__)
 
-def get_parser():
-    # TODO: modify argument parsing
-    parser = argparse.ArgumentParser(
-        "RAPID consumer"
-    )
-    parser.add_argument('in_topic', type=str, help="Kafka topic to read from.")
-    parser.add_argument('out_topic', type=str, help="Kafka topic to write to.")
-    parser.add_argument('err_topic', type=str, help="Kafka topic to write errors to.")
-    parser.add_argument('log_topic', type=str, help="Kafka topic to write logs to.")
-    parser.add_argument('bootstrap_servers', type=str, help="Kafka servers, comma separated.")
-    parser.add_argument('group', type=str, help="Kafka consumer group to which the consumer belongs.")
-    parser.add_argument('sleep_time', type=int, help="Time to sleep in between each scrape (in sec).")
-    parser.add_argument('base_dir', type=str, help="Base directory for temporary store downloaded source code.")
-    return parser
+def get_args_parser():
+    args_parser = argparse.ArgumentParser("RapidPlugin")
+    
+    args_parser.add_argument('--consume_topic', type=str,
+                             default='fasten.RepoCloner.out',
+                             help="Kafka topic to consume from.")
+    
+    args_parser.add_argument('--produce_topic', type=str,
+                             default='fasten.RapidPlugin.callable.out',
+                             help="Kafka topic to produce to.")
+    
+    args_parser.add_argument('--err_topic', type=str,
+                             default='fasten.RapidPlugin.callable.err',
+                             help="Kafka topic to write errors to.")
 
-def default_configs():
+    args_parser.add_argument('--log_topic', type=str,
+                             default='fasten.RapidPlugin.callable.log',
+                             help="Kafka topic to write logs to.")
+    
+    args_parser.add_argument('--bootstrap_servers', type=str,
+                             default='localhost',
+                             help="Kafka servers, comma separated.")
+    
+    args_parser.add_argument('--group_id', type=str,
+                             default='RapidPlugin',
+                             help="Kafka consumer group ID to which the consumer belongs.")
+    
+    args_parser.add_argument('--sleep_time', type=int,
+                             default=1,
+                             help="Time to sleep in between each message consumption (in sec).")
+    args_parser.add_argument('--base_dir', type=str,
+                             default='src',
+                             help="Base directory for temporary storing downloaded source code.")
+    return args_parser
+
+def get_config(args):
     c = Config()
     c.add_config_value('name', 'RapidPlugin')
     c.add_config_value('description', 'A FASTEN plug-in to populate risk related metadata for a product.')
     c.add_config_value('version', '0.0.1')
-    c.add_config_value('bootstrap_servers', 'localhost')
-    c.add_config_value('consume_topic', 'fasten.RepoCloner.out')
-    c.add_config_value('produce_topic', 'fasten.RapidPlugin.callable.out')
-    c.add_config_value('err_topic', 'fasten.RapidPlugin.callable.err')
-    c.add_config_value('group_id', 'rapid-plugin')
-    c.add_config_value('sleep_time', '1')
-    c.add_config_value('base_dir', 'src')
+    c.add_config_value('bootstrap_servers', args.bootstrap_servers)
+    c.add_config_value('consume_topic', args.consume_topic) 
+    c.add_config_value('produce_topic', args.produce_topic)
+    c.add_config_value('err_topic', args.err_topic)
+    c.add_config_value('log_topic', args.log_topic)
+    c.add_config_value('group_id', args.group_id)
+    c.add_config_value('sleep_time', args.sleep_time)
+    c.add_config_value('base_dir', args.base_dir)
     return c
 
 def main():
-    parser = get_parser()
-    args = parser.parse_args()
-    config = default_configs()
-    # TODO: add command line arguments to config
+    parser = get_args_parser()
+    config = get_config(parser.parse_args())
     plugin = RapidPlugin(config)
-
-    # To run an instance that listens to a different topic, we can do:
-    # config_python = default_configs()
-    # config_python.add_config_value('consume_topic', 'fasten.pycg.with_sources.out')
-    # plugin_python = RapidPlugin(config)
-    # Or we use the coomand line args
 
     # Run forever
     while True:
