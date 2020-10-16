@@ -26,6 +26,7 @@ class LizardPackage(Package):
     def __init__(self, forge, product, version, path):
         super.__init__(forge, product, version, path)
         self.timestamp = None
+        self._calculate_metrics()
 
     def _calculate_metrics(self):
         paths = [self.source_pathpath]
@@ -73,18 +74,18 @@ class LizardFile(File):
 
 
 class LizardFunction(Function):
-    def __init__(self, func):
-        self.name = func.name
-        self.long_name = func.long_name
-        self.filename = func.filename
-        self.nloc = func.nloc
-        self.complexity = func.cyclomatic_complexity
-        self.token_count = func.token_count
-        self.parameters = func.parameters
-        self.start_line = func.start_line
-        self.end_line = func.end_line
-        self.fan_in = func.fan_in
-        self.fan_out = func.fan_out
-        self.general_fan_out = func.general_fan_out
-        self.length = func.length
-        self.top_nesting_level = func.top_nesting_level
+    def __init__(self, func_info):
+        self.name = func_info.name
+        self.long_name = func_info.long_name
+        self.filename = func_info.filename
+        self.nloc = func_info.nloc
+        self.complexity = func_info.cyclomatic_complexity
+        self.token_count = func_info.token_count
+        self.parameters = func_info.parameters
+        self.start_line = func_info.start_line
+        self.end_line = func_info.end_line
+        self.fan_in = func_info.fan_in
+        self.fan_out = func_info.fan_out
+        self.general_fan_out = func_info.general_fan_out
+        self.length = func_info.length
+        self.top_nesting_level = func_info.top_nesting_level

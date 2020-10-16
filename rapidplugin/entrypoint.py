@@ -18,11 +18,9 @@ import logging
 import argparse
 from fasten.plugins.kafka import KafkaPlugin
 from rapidplugin.analysis.lizard_analyzer import LizardPackage
+from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 from time import sleep
-from kafka import KafkaProducer
 import kafka.errors as errors
-from zipfile import ZipFile
-import requests
 import os
 
 logger = logging.getLogger(__name__)
@@ -37,7 +35,7 @@ class RapidPlugin(KafkaPlugin):
         'err_topic': 'fasten.RapidPlugin.callable.err',
         'group_id': 'rapid-plugin',
         'sleep_time': 1,
-        'base_dir': None,
+        'base_dir': 'src',
         'analyzer': 'lizard'
     }
 
@@ -73,35 +71,22 @@ class RapidPlugin(KafkaPlugin):
     """
     consume topic: 
     """
-
     def consume(self, record):
         payload = record['payload'] if 'payload' in record else record
+        in_payload = KafkaUtils.tailor_input(payload)
         try:
-            self._validate_message(payload)
+            KafkaUtils.validate_message(payload)
         except AssertionError as e:
-            log_message = self.create_message(self._tailor_input(payload), {"Status": "FAILED"})
+            log_message = self.create_message(in_payload, {"Status": "FAILED"})
             self.emit_message(self.log_topic, log_message, "[FAILED]", "Parsing json failed.")
-            err_message = self.create_message(record, {"Err": "Missing JSON fields."})
+            err_message = self.create_message(in_payload, {"Err": "Missing JSON fields."})
             self.emit_message(self.error_topic, err_message, "[ERROR]", e)
-        in_payload, out_payloads = self.analyze(payload)
-        for payload in out_payloads:
-            self._produce(in_payload, payload)
-
-    def _validate_message(self, payload):
-        assert 'forge' in payload, "Missing 'forge' field."
-        forge = payload['forge']
-        assert forge in {"mvn","debian","PyPI"}, "Unknown forge: '{}}'.".format(forge)
-        if forge == "mvn":
-            assert 'groupId' in payload, "Missing 'groupId' field."
-            assert 'artifactId' in payload, "Missing 'artifactId' field."
-            assert 'version' in payload, "Missing 'version' field."
-        else:
-            assert 'product' in payload, "Missing 'product' field."
-            assert 'version' in payload, "Missing 'version' field."
+        out_payloads = self.analyze(payload)
+        for out_payload in out_payloads:
+            self.produce(in_payload, out_payload)
 
     def analyze(self, payload):
         out_payloads = []
-        in_payload = self._tailor_input(payload)
         forge = payload['forge']
         product = payload['groupId'] + ":" + payload['artifactId'] if forge == "mvn" else payload['product']
         version = payload['version']
@@ -111,35 +96,17 @@ class RapidPlugin(KafkaPlugin):
             out_payloads.append({}.update(package.metadata()).update(function.metadata().update(function.metrics())))
         if forge == "mvn":
             self._clean_up()
-        return in_payload, out_payloads
+        return out_payloads
 
-    def _produce(self, in_payload, out_payload):
+    def produce(self, in_payload, out_payload):
         try:
-            out_message = self.create_message(self._tailor_input(in_payload), {"payload": out_payload})
+            out_message = self.create_message(in_payload, {"payload": out_payload})
             self.emit_message(self.produce_topic, out_message, "succeed", "")
-        except errors.BrokerResponseError as e:
-            log_message = self.create_message(self._tailor_input(in_payload), {"Status": "FAILED"})
+        except errors.KafkaError as e:
+            log_message = self.create_message(in_payload, {"Status": "FAILED"})
             self.emit_message(self.log_topic, log_message, "[FAILED]", "Sending message failed.")
-            err_message = self.create_message(self._tailor_input(in_payload), {"Err": "Message commit error."})
+            err_message = self.create_message(in_payload, {"Err": "Message commit error."})
             self.emit_message(self.error_topic, err_message, "[ERROR]", e)
-
-    def _tailor_input(self, record):
-        return record
-
-    # def set_producer(self):
-    #     """Set producer to sent messages to produce_topic.
-    #     """
-    #     try:
-    #         assert self.produce_topic is not None
-    #         assert self.bootstrap_servers is not None
-    #     except (AssertionError, NameError) as e:
-    #         self.err("You should have set produce_topic, bootstrap_servers, ")
-    #         raise e
-    #     self.producer = KafkaProducer(
-    #         bootstrap_servers=self.bootstrap_servers.split(','),
-    #         max_request_size=15728640,
-    #         value_serializer=lambda x: x.encode('utf-8')
-    #     )
 
     """
     the order to get source code path from different sources: 
@@ -152,34 +119,18 @@ class RapidPlugin(KafkaPlugin):
         if payload['forge'] == "mvn":
             if 'sourcesUrl' in payload:
                 sources_url = payload['sourcesUrl']
-                path = self._download_jar(sources_url)
+                return MavenUtils.download_jar(sources_url, self.base_dir)
             else:
-                if 'repoPath' in payload and 'commitTag' in payload:
+                if 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
                     repo_path = payload['repoPath']
-
-            return path
+                    repo_type = payload['repoType']
+                    commit_tag = payload['commitTag']
+                    return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
         else:
             return payload['sourcePath']
 
-    def _download_jar(self, url):
-        if url == "":
-            return ""
-        else:
-            if not self.base_dir.exists():
-                self.base_dir.mkdir(parents=True)
-            file_name = self.base_dir/url.split('/')[-1]
-            tmp_dir = self.base_dir/'tmp'
-            r = requests.get(url, allow_redirects=True)
-            open(file_name, 'wb').write(r.content)
-            with ZipFile(file_name, 'r') as zipObj:
-                zipObj.extractall(tmp_dir)
-        # delete jar file
-            return tmp_dir
-
-    def _checkout_version(self, repo_path, version_tag):
-        return ""
-
     def _clean_up(self):
+        # delete all under base_dir
         pass
 
 

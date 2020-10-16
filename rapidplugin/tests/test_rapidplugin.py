@@ -38,5 +38,38 @@ class TestGetSourceCode:
 
 
 class TestConsumeRecord:
+    mvn_message_with_source_url = {
+        "forge": "mvn",
+        "groupId": "",
+        "artifactId": "",
+        "version": "",
+        "sourceURL": "",
+        "repoPath": "",
+        "repoType": "",
+        "commitTag": ""
+    }
+    mvn_message_with_repo = {
+        "forge": "mvn",
+        "groupId": "",
+        "artifactId": "",
+        "version": "",
+        "sourceURL": "",
+        "repoPath": "",
+        "repoType": "",
+        "commitTag": ""
+    }
+    debian_message = {
+        "forge": "debian",
+        "product": "",
+        "version": "",
+        "sourcePath": ""
+    }
+    pypi_message = {
+        "forge": "PyPI",
+        "product": "",
+        "version": "",
+        "sourcePath": ""
+    }
+
     def test_analyze(self, record):
         assert True
