@@ -32,6 +32,7 @@ class RapidPlugin(KafkaPlugin):
         self.log_topic = self.config.get_config_value('log_topic')
         self.error_topic = self.config.get_config_value('err_topic')
         self.group_id = self.config.get_config_value('group_id')
+        self.base_dir = self.config.get_config_value('base_dir')
         self.set_consumer()
         self.set_producer()
 
