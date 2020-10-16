@@ -42,7 +42,7 @@ def get_args_parser():
     
     args_parser.add_argument('--bootstrap_servers', type=str,
                              default='localhost',
-                             help="Kafka servers, comma separated.")
+                             help="Kafka servers, comma separated list between quotes.")
     
     args_parser.add_argument('--group_id', type=str,
                              default='RapidPlugin',
