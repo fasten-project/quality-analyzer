@@ -15,8 +15,8 @@
 
 from fasten.plugins.kafka import KafkaPlugin
 import kafka.errors as errors
-from rapidplugin.analysis.lizard_analyzer import LizardPackage
-from rapidplugin.utils.utils import MavenUtils, KafkaUtils
+from analysis.lizard_analyzer import LizardPackage
+from utils.utils import MavenUtils, KafkaUtils
 
 class RapidPlugin(KafkaPlugin):
     '''

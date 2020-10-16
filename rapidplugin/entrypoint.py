@@ -16,8 +16,8 @@
 import logging
 import argparse
 from time import sleep
-from rapidplugin.rapid_plugin import RapidPlugin
-from rapidplugin.config import Config
+from rapid_plugin import RapidPlugin
+from config import Config
 
 logger = logging.getLogger(__name__)
 

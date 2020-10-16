@@ -18,7 +18,7 @@ import lizard
 import datetime
 
 
-from rapidplugin.domain.package import Package, File, Function
+from domain.package import Package, File, Function
 
 
 class LizardPackage(Package):
