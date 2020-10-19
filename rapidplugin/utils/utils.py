@@ -35,7 +35,7 @@ class MavenUtils:
             open(file_name, 'wb').write(r.content)
             with ZipFile(file_name, 'r') as zipObj:
                 zipObj.extractall(tmp_dir)
-            # delete jar file
+            # TODO: delete jar file
             return tmp_dir
 
     @staticmethod

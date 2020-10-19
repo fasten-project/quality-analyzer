@@ -15,8 +15,9 @@
 
 from fasten.plugins.kafka import KafkaPlugin
 import kafka.errors as errors
-from analysis.lizard_analyzer import LizardPackage
+from analysis.lizard_analyzer import LizardAnalyzer
 from utils.utils import MavenUtils, KafkaUtils
+
 
 class RapidPlugin(KafkaPlugin):
     '''
@@ -65,30 +66,10 @@ class RapidPlugin(KafkaPlugin):
                               "[FAILED]", "Parsing json failed.")
             err_message = self.create_message(in_payload, {"Err": "Missing JSON fields."})
             self.emit_message(self.error_topic, err_message, "[ERROR]", e)
-        out_payloads = self.analyze(payload)
+        analyzer = LizardAnalyzer(self.base_dir)
+        out_payloads = analyzer.analyze(payload)
         for out_payload in out_payloads:
             self.produce(in_payload, out_payload)
-
-    def analyze(self, payload):
-        '''
-        TODO
-        '''
-        out_payloads = []
-        forge = payload['forge']
-        group_id = payload['groupId']
-        artifact_id = payload['artifactId']
-        product = group_id + ":" + artifact_id if forge == "mvn" else payload['product']
-        version = payload['version']
-        path = self._get_source_path(payload)
-        package = LizardPackage(forge, product, version, path)
-        for function in package.functions():
-            out_payloads.append({}.
-                                update(package.metadata()).
-                                update(function.metadata().
-                                       update(function.metrics())))
-        if forge == "mvn":
-            self._clean_up()
-        return out_payloads
 
     def produce(self, in_payload, out_payload):
         '''
@@ -103,30 +84,4 @@ class RapidPlugin(KafkaPlugin):
             err_message = self.create_message(in_payload, {"Err": "Message commit error."})
             self.emit_message(self.error_topic, err_message, "[ERROR]", e)
 
-    def _get_source_path(self, payload):
-        """
-        TODO: consider moving this to a utility class.
-        the order to get source code path from different sources: 
-        [x] 1. if *-sources.jar is valid, download(get from cache), 
-               uncompress and return the path
-        [ ] 2. else if repoPath is not empty
-        [ ] 2.1 if commit tag is valid, checkout based on tag and return the path
-            3. else return null
-        """
-        if payload['forge'] == "mvn":
-            if 'sourcesUrl' in payload:
-                sources_url = payload['sourcesUrl']
-                return MavenUtils.download_jar(sources_url, self.base_dir)
-            else:
-                if 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
-                    repo_path = payload['repoPath']
-                    repo_type = payload['repoType']
-                    commit_tag = payload['commitTag']
-                    return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
-        else:
-            return payload['sourcePath']
 
-    def _clean_up(self):
-        '''
-        TODO: delete all under base_dir
-        '''

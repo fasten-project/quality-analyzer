@@ -85,20 +85,23 @@ class Package(ABC):
             'debian': 'c',
             'PyPI': 'python'
         }
-        return {
+        m = {
             "product": self.product,
             "version": self.version,
             "forge": self.forge,
             "language": language[self.forge]
-        }.update(self._get_analyzer())
+        }
+        m.update(self._get_analyzer())
+        return m
 
     def metrics(self):
         return {
-            "nloc": self.nloc(),
-            "method_count": self.method_count(),
-            "complexity": self.complexity(),
-            "token_count": self.token_count()
-            # "file_list": [f.metrics() for f in self.files()],
+            "metrics": {
+                "nloc": self.nloc(),
+                "method_count": self.method_count(),
+                "complexity": self.complexity(),
+                "token_count": self.token_count()
+            }
         }
 
 
@@ -126,7 +129,6 @@ class File(ABC):
             "average_cyclomatic_complexity": self.average_cyclomatic_complexity,
             "CCN": self.CCN,
             "ND": self.ND
-            # "function_list": [fun.metrics() for fun in self.function_list]
         }
 
 
