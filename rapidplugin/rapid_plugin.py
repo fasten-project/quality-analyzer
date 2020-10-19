@@ -56,8 +56,11 @@ class RapidPlugin(KafkaPlugin):
         '''
         Announces the activation of this plugin instance to the log_topic.
         '''
-        msg = self.create_message("Plugin active.", "")
-        self.emit_message(self.log_topic, msg, "[ACTIVATED]", msg)
+        msg = self.create_message("Plugin active with configuration " +
+                                  "'" + self.plugin_config.get_config_name() + "': "+
+                                  format(self.plugin_config.get_all_values()),
+                                  "")
+        self.emit_message(self.log_topic, msg, "[BEGIN]", msg)
     
     def consume(self, record):
         '''
