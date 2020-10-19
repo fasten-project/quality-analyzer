@@ -24,12 +24,22 @@ def analyzer():
     analyzer.clean_up()
 
 
+mvn_libai_1_6_12 = {
+    "forge": "mvn",
+    "groupId": "ai.api",
+    "artifactId": "libai",
+    "version": "1.6.12",
+    "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
+    "repoPath": "",
+    "repoType": "",
+    "commitTag": ""
+}
 mvn_message_with_source_url = {
     "forge": "mvn",
     "groupId": "test-mvn",
     "artifactId": "m1",
     "version": "1.0.0",
-    "sourceURL": "/maven/m1/m1.jar",
+    "sourcesUrl": "/maven/m1/m1.jar",
     "repoPath": "",
     "repoType": "",
     "commitTag": ""
@@ -39,7 +49,7 @@ mvn_message_with_repo = {
     "groupId": "test-mvn",
     "artifactId": "m1",
     "version": "1.0.0",
-    "sourceURL": "",
+    "sourcesUrl": "",
     "repoPath": "tmp/maven/m1",
     "repoType": "git",
     "commitTag": "1.0.0"
@@ -59,7 +69,7 @@ pypi_message = {
 
 # List of (payload, function_count) pairs
 FUNCTION_COUNT_DATA = [
-    # (mvn_message_with_repo, 1),
+    (mvn_libai_1_6_12, 411),
     (debian_message, 1),
     (pypi_message, 1)
 ]
