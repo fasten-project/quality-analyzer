@@ -37,38 +37,32 @@ python3 entrypoint.py fasten.RepoCloner.out fasten.RapidPlugin.out fasten.RapidP
 kafkacat -C -b localhost -t fasten.RapidPlugin.log -p 0 -o 0 -e
 ```
 
-## Example json message in the produced topic
+## Kafka message format for the topic fasten.RapidPlugin.callables.out
 ```
 {
   "plugin_name": "RapidPlugin",
   "plugin_version": "0.0.1",
   "input": {
-    "groupId": "fasten-project",
-    "artifactId": "fasten",
-    "version": "1.0.0",
-    "repoPath": "/repos/fasten-project/fasten"
+    ...
   },
   "created_at": "1595434993.938192",
   "payload": {
+    "analyzer_name": "Lizard",
+    "analyzer_version": "1.17.5",
+    "analysis_timestamp": "datetime of Lizard run",
     "product": "fasten-project:fasten",
+    "version": "1.0.0"
     "forge": "mvn",
-    "generator": "Lizard",
+    "language": "java"
+    "filepath": "/fasten/core/server.java",
+    "name": "callable",
+    "long_name": "callable(int i)",
+    "start_line": 33,
+    "end_line": 42,
     "metrics": {
       "nloc": 11188,
-      "method_count": 1115,
-      "complexity": -1,
-      "file_list": [
-        {
-            "filename": "fileName.java",
-            "nloc": 108,
-            "function_list": [
-                {
-                    "name": "functionName",
-                    "nloc": 8
-                }
-            ]
-        }
-      ]
+      "complexity": 10,
+      ...
     }
   }
 }
