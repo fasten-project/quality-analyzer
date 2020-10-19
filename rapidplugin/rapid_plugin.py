@@ -38,6 +38,7 @@ class RapidPlugin(KafkaPlugin):
         self.base_dir = self.plugin_config.get_config_value('base_dir')
         self.set_consumer()
         self.set_producer()
+        self.announce()
 
     def name(self):
         return self._name
@@ -51,6 +52,13 @@ class RapidPlugin(KafkaPlugin):
     def free_resource(self):
         pass
 
+    def announce(self):
+        '''
+        Announces the activation of this plugin instance to the log_topic.
+        '''
+        msg = self.create_message("Plugin active.", "")
+        self.emit_message(self.log_topic, msg, "[ACTIVATED]", msg)
+    
     def consume(self, record):
         '''
         TODO
