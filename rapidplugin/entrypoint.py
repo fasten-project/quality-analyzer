@@ -15,11 +15,16 @@
 
 import logging
 import argparse
+import pprint
 from time import sleep
 from rapid_plugin import RapidPlugin
 from config import Config
 
 logger = logging.getLogger(__name__)
+
+plugin_name = 'RapidPlugin'
+plugin_description = 'A FASTEN plug-in to populate risk related metadata for a product.'
+plugin_version = '0.0.1'
 
 def get_args_parser():
     args_parser = argparse.ArgumentParser("RapidPlugin")
@@ -57,12 +62,9 @@ def get_args_parser():
     return args_parser
 
 def get_config(args):
-    c = Config()
-    c.add_config_value('name', 'RapidPlugin')
-    c.add_config_value('description', 'A FASTEN plug-in to populate risk related metadata for a product.')
-    c.add_config_value('version', '0.0.1')
+    c = Config('Default')
     c.add_config_value('bootstrap_servers', args.bootstrap_servers)
-    c.add_config_value('consume_topic', args.consume_topic) 
+    c.add_config_value('consume_topic', args.consume_topic)
     c.add_config_value('produce_topic', args.produce_topic)
     c.add_config_value('err_topic', args.err_topic)
     c.add_config_value('log_topic', args.log_topic)
@@ -73,13 +75,20 @@ def get_config(args):
 
 def main():
     parser = get_args_parser()
-    config = get_config(parser.parse_args())
-    plugin = RapidPlugin(config)
+    plugin_config = get_config(parser.parse_args())
+
+    print(plugin_name + ' ' + plugin_version)
+    print('Running with configuration ' + '\"' + plugin_config.get_config_name() + '\"')
+
+    pp = pprint.PrettyPrinter(indent = 2)
+    pp.pprint(plugin_config.get_all_values())
+    
+    plugin = RapidPlugin(plugin_name, plugin_version, plugin_description, plugin_config)
 
     # Run forever
     while True:
         plugin.consume_messages()
-        sleep(config.get_config_value('sleep_time'))
+        sleep(plugin_config.get_config_value('sleep_time'))
 
 if __name__ == "__main__":
     main()

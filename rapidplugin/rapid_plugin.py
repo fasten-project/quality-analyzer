@@ -24,27 +24,30 @@ class RapidPlugin(KafkaPlugin):
     and producing the resulting payload back into a Kafka topic.
     '''
 
-    def __init__(self, config):
-        self.config = config
-        super().__init__(self.config.get_config_value('bootstrap_servers'))
-        self.consume_topic = self.config.get_config_value('consume_topic')
-        self.produce_topic = self.config.get_config_value('produce_topic')
-        self.log_topic = self.config.get_config_value('log_topic')
-        self.error_topic = self.config.get_config_value('err_topic')
-        self.group_id = self.config.get_config_value('group_id')
-        self.base_dir = self.config.get_config_value('base_dir')
+    def __init__(self, name, version, description, plugin_config):
+        self.name = name
+        self.version = version
+        self.description = description
+        self.plugin_config = plugin_config
+        super().__init__(self.plugin_config.get_config_value('bootstrap_servers'))
+        self.consume_topic = self.plugin_config.get_config_value('consume_topic')
+        self.produce_topic = self.plugin_config.get_config_value('produce_topic')
+        self.log_topic = self.plugin_config.get_config_value('log_topic')
+        self.error_topic = self.plugin_config.get_config_value('err_topic')
+        self.group_id = self.plugin_config.get_config_value('group_id')
+        self.base_dir = self.plugin_config.get_config_value('base_dir')
         self.set_consumer()
         self.set_producer()
 
     def name(self):
-        return self.config.get_config_value('name')
-
-    def description(self):
-        return self.config.get_config_value('description')
+        return self.name
 
     def version(self):
-        return self.config.get_config_value('version')
-
+        return self.version
+    
+    def description(self):
+        return self.description
+    
     def free_resource(self):
         pass
 
