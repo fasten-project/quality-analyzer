@@ -26,9 +26,9 @@ class RapidPlugin(KafkaPlugin):
     '''
 
     def __init__(self, name, version, description, plugin_config):
-        self.name = name
-        self.version = version
-        self.description = description
+        self._name = name
+        self._version = version
+        self._description = description
         self.plugin_config = plugin_config
         super().__init__(self.plugin_config.get_config_value('bootstrap_servers'))
         self.consume_topic = self.plugin_config.get_config_value('consume_topic')
@@ -39,19 +39,30 @@ class RapidPlugin(KafkaPlugin):
         self.base_dir = self.plugin_config.get_config_value('base_dir')
         self.set_consumer()
         self.set_producer()
+        self.announce()
 
     def name(self):
-        return self.name
+        return self._name
 
     def version(self):
-        return self.version
+        return self._version
     
     def description(self):
-        return self.description
+        return self._description
     
     def free_resource(self):
         pass
 
+    def announce(self):
+        '''
+        Announces the activation of this plugin instance to the log_topic.
+        '''
+        msg = self.create_message("Plugin active with configuration " +
+                                  "'" + self.plugin_config.get_config_name() + "': "+
+                                  format(self.plugin_config.get_all_values()),
+                                  "")
+        self.emit_message(self.log_topic, msg, "[BEGIN]", msg)
+    
     def consume(self, record):
         '''
         TODO
