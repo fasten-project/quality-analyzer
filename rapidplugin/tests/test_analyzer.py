@@ -50,14 +50,34 @@ mvn_message_with_source_url = {
     "repoType": "",
     "commitTag": ""
 }
-mvn_message_with_repo = {
+mvn_message_with_git_repo = {
     "forge": "mvn",
     "groupId": "test-mvn",
     "artifactId": "m1",
     "version": "1.0.0",
     "sourcesUrl": "",
-    "repoPath": "maven/m1",
+    "repoPath": "maven/git/m1",
     "repoType": "git",
+    "commitTag": "1.0.0"
+}
+mvn_message_with_svn_repo = {
+    "forge": "mvn",
+    "groupId": "test-mvn",
+    "artifactId": "m2",
+    "version": "1.0.0",
+    "sourcesUrl": "",
+    "repoPath": "maven/svn/m2",
+    "repoType": "svn",
+    "commitTag": "1.0.0"
+}
+mvn_message_with_hg_repo = {
+    "forge": "mvn",
+    "groupId": "test-mvn",
+    "artifactId": "m3",
+    "version": "1.0.0",
+    "sourcesUrl": "",
+    "repoPath": "maven/hg/m3",
+    "repoType": "hg",
     "commitTag": "1.0.0"
 }
 debian_message = {

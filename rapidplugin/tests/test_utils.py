@@ -15,11 +15,17 @@
 
 import os
 import pytest
-from utils.utils import MavenUtils
+from utils.utils import MavenUtils, KafkaUtils
 from pathlib import Path
 
 DOWNLOAD_URL_DATA = [
     ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar")
+]
+
+REPO_PATH_DATA = [
+    ("maven/git/m1", "git", "1.0.0")
+    # ("maven/svn/m2", "svn", "1.0.0"),
+    # ("maven/hg/m3", "hg", "1.0.0")
 ]
 
 @pytest.fixture(scope='session')
@@ -31,7 +37,19 @@ def test_download_jar(url, sources_dir):
     source_path = MavenUtils.download_jar(url, sources_dir)
     assert str(source_path) == os.path.join(sources_dir, 'tmp')
 
+@pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
+def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir):
+    source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
+    assert str(source_path) == os.path.join(sources_dir, repo_path)
 
+PAYLOAD_TAILOR_DATA = [
+    ({"product": "a"}, {"product": "a"}),
+    ({"product": "a", "graph": {"g": ""}}, {"product": "a", "graph": {}}),
+    ({"product": "a", "cha": {"c": ""}}, {"product": "a", "cha": {}}),
+    ({"product": "a", "modules": {"m": ""}}, {"product": "a", "modules": {}})
+]
+@pytest.mark.parametrize('in_payload, out_payload', PAYLOAD_TAILOR_DATA)
 def test_tailor_input(in_payload, out_payload):
-    assert True
+    tailored = KafkaUtils.tailor_input(in_payload)
+    assert tailored == out_payload
 

@@ -41,15 +41,15 @@ class MavenUtils:
             return tmp_dir
 
     @staticmethod
-    def checkout_version(repo_path, repo_type, version_tag):
-        version_path = None
-        repo = Repo(repo_path)
-        lock = Lock()
-        with lock:
-            repo.git.checkout(version_tag)
-            # copy /repo_path to /temp dir and
-            # restore repo to its original state
-        return version_path
+    def checkout_version(repo_path, repo_type, version_tag, base_dir):
+        base_dir = Path(base_dir)
+        if not base_dir.exists():
+            base_dir.mkdir(parents=True)
+        if repo_type == "git":
+            # check out
+            return base_dir/repo_path
+        else:
+            return ""
 
 
 class KafkaUtils:
