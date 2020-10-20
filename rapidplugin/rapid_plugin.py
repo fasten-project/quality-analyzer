@@ -36,7 +36,7 @@ class RapidPlugin(KafkaPlugin):
         self.log_topic = self.plugin_config.get_config_value('log_topic')
         self.error_topic = self.plugin_config.get_config_value('err_topic')
         self.group_id = self.plugin_config.get_config_value('group_id')
-        self.base_dir = self.plugin_config.get_config_value('base_dir')
+        self.sources_dir = self.plugin_config.get_config_value('sources_dir')
         self.set_consumer()
         self.set_producer()
         self.announce()
@@ -77,7 +77,7 @@ class RapidPlugin(KafkaPlugin):
                               "[FAILED]", "Parsing json failed.")
             err_message = self.create_message(in_payload, {"Err": "Missing JSON fields."})
             self.emit_message(self.error_topic, err_message, "[ERROR]", e)
-        analyzer = LizardAnalyzer(self.base_dir)
+        analyzer = LizardAnalyzer(self.sources_dir)
         out_payloads = analyzer.analyze(payload)
         for out_payload in out_payloads:
             self.produce(in_payload, out_payload)
