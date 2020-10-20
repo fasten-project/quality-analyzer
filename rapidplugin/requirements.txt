@@ -1,4 +1,4 @@
 fasten
 lizard
 requests
-git
+gitpython
