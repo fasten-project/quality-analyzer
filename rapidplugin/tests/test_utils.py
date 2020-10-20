@@ -18,7 +18,7 @@ from utils.utils import MavenUtils
 from pathlib import Path
 
 DOWNLOAD_URL_DATA = [
-    ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar", "fasten", "fasten/tmp")
+    ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar", "fasten", "fasten/resources")
 ]
 
 
@@ -26,3 +26,8 @@ DOWNLOAD_URL_DATA = [
 def test_download_jar(url, base_dir, path):
     source_path = MavenUtils.download_jar(url, base_dir)
     assert source_path == Path(path)
+
+
+def test_tailor_input(in_payload, out_payload):
+    assert True
+

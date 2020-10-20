@@ -15,6 +15,8 @@
 
 from zipfile import ZipFile
 from pathlib import Path
+from git import Repo
+from threading import Lock
 import requests
 
 
@@ -40,7 +42,14 @@ class MavenUtils:
 
     @staticmethod
     def checkout_version(repo_path, repo_type, version_tag):
-        return
+        version_path = None
+        repo = Repo(repo_path)
+        lock = Lock()
+        with lock:
+            repo.git.checkout(version_tag)
+            # copy /repo_path to /temp dir and
+            # restore repo to its original state
+        return version_path
 
 
 class KafkaUtils:
@@ -59,6 +68,26 @@ class KafkaUtils:
 
     @staticmethod
     def tailor_input(payload):
+        """
+        Tailor 'payload' from consumed topics,
+        to avoid (big) call graph data
+        adding to 'input' field in the produced topics.
+        """
+        graph = {
+            "graph": {}
+        }
+        modules = {
+            "modules": {}
+        }
+        cha = {
+            "cha": {}
+        }
+        if 'graph' in payload:
+            payload.update(graph)
+        if 'modules' in payload:
+            payload.update(modules)
+        if 'cha' in payload:
+            payload.update(cha)
         return payload
 
 

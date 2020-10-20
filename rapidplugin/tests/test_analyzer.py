@@ -50,7 +50,7 @@ mvn_message_with_repo = {
     "artifactId": "m1",
     "version": "1.0.0",
     "sourcesUrl": "",
-    "repoPath": "tmp/maven/m1",
+    "repoPath": "resources/maven/m1",
     "repoType": "git",
     "commitTag": "1.0.0"
 }
@@ -58,13 +58,13 @@ debian_message = {
     "forge": "debian",
     "product": "d1",
     "version": "1.0.0",
-    "sourcePath": "tmp/debian/d1"
+    "sourcePath": "resources/debian/d1"
 }
 pypi_message = {
     "forge": "PyPI",
     "product": "p1",
     "version": "1.0.0",
-    "sourcePath": "tmp/pypi/p1"
+    "sourcePath": "resources/pypi/p1"
 }
 
 # List of (payload, function_count) pairs
