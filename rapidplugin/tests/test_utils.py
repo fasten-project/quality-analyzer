@@ -13,16 +13,20 @@
 # limitations under the License.
 #
 
+import os
 import pytest
 from utils.utils import MavenUtils
 from pathlib import Path
 
 DOWNLOAD_URL_DATA = [
-    ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar", "fasten", "fasten/tmp")
+    ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar")
 ]
 
+@pytest.fixture(scope='session')
+def sources_dir(tmp_path_factory):
+    yield tmp_path_factory.mktemp("sources")
 
-@pytest.mark.parametrize('url,base_dir,path', DOWNLOAD_URL_DATA)
-def test_download_jar(url, base_dir, path):
-    source_path = MavenUtils.download_jar(url, base_dir)
-    assert source_path == Path(path)
+@pytest.mark.parametrize('url', DOWNLOAD_URL_DATA)
+def test_download_jar(url, sources_dir):
+    source_path = MavenUtils.download_jar(url, sources_dir)
+    assert str(source_path) == os.path.join(sources_dir, 'tmp')
