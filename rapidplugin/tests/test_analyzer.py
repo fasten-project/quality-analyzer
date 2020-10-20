@@ -1,3 +1,4 @@
+
 # Copyright 2020 Software Improvement Group
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +14,21 @@
 # limitations under the License.
 #
 
+import os
 import pytest
 import shutil
 from analysis.lizard_analyzer import LizardAnalyzer
 
 
 @pytest.fixture(scope='session')
-def analyzer(tmp_path_factory):
+def sources(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("sources")
     shutil.copytree('tests/resources', tmp, dirs_exist_ok=True)
-    yield LizardAnalyzer(str(tmp))
+    yield tmp
+
+@pytest.fixture(scope='session')
+def analyzer(sources):
+    yield LizardAnalyzer(str(sources))
 
 mvn_libai_1_6_12 = {
     "forge": "mvn",
@@ -39,7 +45,7 @@ mvn_message_with_source_url = {
     "groupId": "test-mvn",
     "artifactId": "m1",
     "version": "1.0.0",
-    "sourcesUrl": "/maven/m1/m1.jar",
+    "sourcesUrl": "maven/m1/m1.jar",
     "repoPath": "",
     "repoType": "",
     "commitTag": ""
@@ -90,25 +96,29 @@ FUNCTION_METRICS_DATA = [
 
 
 @pytest.mark.parametrize('record,fc', FUNCTION_COUNT_DATA)
-def test_function_count(analyzer: LizardAnalyzer, record, fc: int):
-    out_payloads = analyzer.analyze(record)
+def test_function_count(analyzer, sources, record, fc: int):
+    out_payloads = analyzer.analyze(fix_sourcePath(record, sources))
     assert len(out_payloads) == fc
 
 
 @pytest.mark.parametrize('record,start_line,end_line', FUNCTION_LINE_DATA)
-def test_function_location(analyzer: LizardAnalyzer, record, start_line: int, end_line: int):
-    out_payloads = analyzer.analyze(record)
+def test_function_location(analyzer, sources, record, start_line: int, end_line: int):
+    out_payloads = analyzer.analyze(fix_sourcePath(record, sources))
     metadata = out_payloads[0]
     assert metadata['start_line'] == start_line
     assert metadata['end_line'] == end_line
 
 
 @pytest.mark.parametrize('record,nloc,complexity,token_count', FUNCTION_METRICS_DATA)
-def test_function_metrics(analyzer: LizardAnalyzer, record, nloc: int, complexity: int, token_count: int):
-    out_payloads = analyzer.analyze(record)
+def test_function_metrics(analyzer, sources, record, nloc: int, complexity: int, token_count: int):
+    out_payloads = analyzer.analyze(fix_sourcePath(record, sources))
     metrics = out_payloads[0]['metrics']
     assert metrics['nloc'] == nloc
     assert metrics['complexity'] == complexity
     assert metrics['token_count'] == token_count
 
-
+def fix_sourcePath(record, tmp_sources_path):
+    if "sourcePath" in record:
+        sourcePath = record["sourcePath"]
+        record.update({"sourcePath" : os.path.join(tmp_sources_path, sourcePath)})
+    return record
