@@ -13,11 +13,10 @@
 # limitations under the License.
 #
 
+import os
 import logging
-import lizard
 import datetime
-from pathlib import Path
-
+import lizard
 
 from domain.package import Package, File, Function
 from utils.utils import MavenUtils
@@ -73,7 +72,7 @@ class LizardAnalyzer:
                     commit_tag = payload['commitTag']
                     return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
         else:
-            return payload['sourcePath']
+            return os.path.join(self.base_dir, payload['sourcePath'])
 
     def clean_up(self):
         '''
