@@ -1,2 +1,3 @@
 fasten
 git+https://github.com/terryyin/lizard.git@1.17.5
+requests

@@ -56,7 +56,7 @@ def get_args_parser():
     args_parser.add_argument('--sleep_time', type=int,
                              default=1,
                              help="Time to sleep in between each message consumption (in sec).")
-    args_parser.add_argument('--base_dir', type=str,
+    args_parser.add_argument('--sources_dir', type=str,
                              default='src',
                              help="Base directory for temporary storing downloaded source code.")
     return args_parser
@@ -70,7 +70,7 @@ def get_config(args):
     c.add_config_value('log_topic', args.log_topic)
     c.add_config_value('group_id', args.group_id)
     c.add_config_value('sleep_time', args.sleep_time)
-    c.add_config_value('base_dir', args.base_dir)
+    c.add_config_value('sources_dir', args.sources_dir)
     return c
 
 def main():

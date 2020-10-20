@@ -14,15 +14,15 @@
 #
 
 import pytest
+import shutil
 from analysis.lizard_analyzer import LizardAnalyzer
 
 
-@pytest.fixture
-def analyzer():
-    analyzer = LizardAnalyzer("/tmp")
-    yield analyzer
-    analyzer.clean_up()
-
+@pytest.fixture(scope='session')
+def analyzer(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("sources")
+    shutil.copytree('tests/resources', tmp, dirs_exist_ok=True)
+    yield LizardAnalyzer(str(tmp))
 
 mvn_libai_1_6_12 = {
     "forge": "mvn",
@@ -50,7 +50,7 @@ mvn_message_with_repo = {
     "artifactId": "m1",
     "version": "1.0.0",
     "sourcesUrl": "",
-    "repoPath": "resources/maven/m1",
+    "repoPath": "maven/m1",
     "repoType": "git",
     "commitTag": "1.0.0"
 }
@@ -58,13 +58,13 @@ debian_message = {
     "forge": "debian",
     "product": "d1",
     "version": "1.0.0",
-    "sourcePath": "resources/debian/d1"
+    "sourcePath": "debian/d1"
 }
 pypi_message = {
     "forge": "PyPI",
     "product": "p1",
     "version": "1.0.0",
-    "sourcePath": "resources/pypi/p1"
+    "sourcePath": "pypi/p1"
 }
 
 # List of (payload, function_count) pairs
