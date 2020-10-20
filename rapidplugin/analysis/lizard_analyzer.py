@@ -72,7 +72,9 @@ class LizardAnalyzer:
                     commit_tag = payload['commitTag']
                     return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
         else:
-            return os.path.join(self.base_dir, payload['sourcePath'])
+            source_path = payload['sourcePath']
+            assert os.path.isabs(source_path)
+            return source_path
 
     def clean_up(self):
         '''
