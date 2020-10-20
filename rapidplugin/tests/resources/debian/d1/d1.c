@@ -1,0 +1,4 @@
+class c
+{
+    int d(){}
+}
