@@ -15,8 +15,7 @@
 
 from zipfile import ZipFile
 from pathlib import Path
-from git import Repo
-from threading import Lock
+from git import Repo, GitCommandError
 import requests
 
 
@@ -45,9 +44,19 @@ class MavenUtils:
         base_dir = Path(base_dir)
         if not base_dir.exists():
             base_dir.mkdir(parents=True)
+        tmp_dir = base_dir/"tmp"
         if repo_type == "git":
-            # check out
-            return base_dir/repo_path
+            repo = Repo(repo_path)
+            assert repo.tags[version_tag] is not None
+            archive_name = version_tag+".zip"
+            archive_file_name = tmp_dir/archive_name
+            try:
+                repo.git.archive(version_tag, o=archive_file_name)
+                with ZipFile(archive_file_name, 'r') as zipObj:
+                    zipObj.extractall(tmp_dir)
+                return tmp_dir
+            except GitCommandError:
+                return ""
         else:
             return ""
 
