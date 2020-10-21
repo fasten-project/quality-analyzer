@@ -14,9 +14,9 @@
 #
 
 import os
+import shutil
 import pytest
 from utils.utils import MavenUtils, KafkaUtils
-from pathlib import Path
 
 DOWNLOAD_URL_DATA = [
     ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar")
@@ -32,15 +32,23 @@ REPO_PATH_DATA = [
 def sources_dir(tmp_path_factory):
     yield tmp_path_factory.mktemp("sources")
 
+@pytest.fixture(scope='session')
+def repos(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("repos")
+    shutil.copytree('tests/resources', tmp, dirs_exist_ok=True)
+    yield tmp
+
 @pytest.mark.parametrize('url', DOWNLOAD_URL_DATA)
 def test_download_jar(url, sources_dir):
     source_path = MavenUtils.download_jar(url, sources_dir)
     assert str(source_path) == os.path.join(sources_dir, 'tmp')
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
-def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir):
+def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
+    repo_path = os.path.join(repos, repo_path)
+    print(repo_path)
     source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
-    assert str(source_path) == os.path.join(sources_dir, repo_path)
+    assert str(source_path) == os.path.join(sources_dir, 'tmp')
 
 PAYLOAD_TAILOR_DATA = [
     ({"product": "a"}, {"product": "a"}),
