@@ -23,6 +23,10 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Setup environment
+      run: |
+        git config --global user.email "quality-analyzer-ci@fasten-project.eu"
+        git config --global user.name "quality-analyzer-ci"
     - name: Install dependencies
       working-directory: rapidplugin
       run: |
