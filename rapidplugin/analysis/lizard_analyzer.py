@@ -55,12 +55,13 @@ class LizardAnalyzer:
     def get_source_path(self, payload):
         """
         TODO: consider moving this to a utility class.
-        the order to get source code path from different sources:
-        [x] 1. if *-sources.jar is valid, download(get from cache),
-               uncompress and return the path
-        [ ] 2. else if repoPath is not empty
-        [ ] 2.1 if commit tag is valid, checkout based on tag and return the path
-            3. else return null
+        For maven, the order to get source code path from different sources:
+        [x] 1. if *-sources.jar is valid, download,
+               uncompress and return the path to the source code
+        [x] 2. else if repoPath is not empty, and
+        [x]    2.1 if commit tag is valid, checkout based on tag and return the path
+        [ ]    2.2 if needed, checkout based on the release date.
+        [ ] 3. else return null
         """
         if payload['forge'] == "mvn":
             if 'sourcesUrl' in payload:
@@ -79,9 +80,10 @@ class LizardAnalyzer:
 
     def clean_up(self):
         '''
-        TODO: delete all under base_dir
+        TODO
         '''
-
+        if os.path.exists(self.base_dir):
+            shutil.rmtree(self.base_dir)
 
 
 class LizardPackage(Package):

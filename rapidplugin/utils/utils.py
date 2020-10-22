@@ -17,6 +17,7 @@ from zipfile import ZipFile
 from pathlib import Path
 from git import Repo, GitCommandError
 import requests
+import os
 
 
 class MavenUtils:
@@ -36,7 +37,6 @@ class MavenUtils:
             open(file_name, 'wb').write(r.content)
             with ZipFile(file_name, 'r') as zipObj:
                 zipObj.extractall(tmp_dir)
-            # TODO: delete jar file
             return tmp_dir
 
     @staticmethod
@@ -58,7 +58,9 @@ class MavenUtils:
                 return tmp_dir
             except GitCommandError:
                 return ""
-        else:
+        if repo_type == "svn":
+            return ""
+        if repo_type == "hg":
             return ""
 
 
