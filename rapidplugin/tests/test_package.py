@@ -14,7 +14,7 @@
 #
 
 import pytest
-from rapidplugin.domain.package import Package
+from domain.package import Package
 
 
 @pytest.fixture
@@ -41,14 +41,10 @@ class TestPackage:
 
     @pytest.fixture
     def package(forge, product, version, path):
-        p = Package(forge, product, version, path)
-        yield p
-        p.clear()
+        pass
 
-    @pytest.mark.parametrize('forge, product, version, path', ['mvn', 'fasten-project:fasten', '1.0.0', '/repos/fasten'])
     def test_metrics(self):
         assert True
-
 
 class TestFile:
 

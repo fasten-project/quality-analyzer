@@ -13,18 +13,81 @@
 # limitations under the License.
 #
 
+import os
+import shutil
 import logging
-import lizard
 import datetime
-
+import lizard
 
 from domain.package import Package, File, Function
+from utils.utils import MavenUtils
+
+logger = logging.getLogger(__name__)
+
+
+class LizardAnalyzer:
+    def __init__(self, base_dir):
+        self.analyzer_name = "Lizard"
+        self.base_dir = base_dir
+
+    def analyze(self, payload):
+        '''
+        TODO
+        '''
+        out_payloads = []
+        forge = payload['forge']
+        product = payload['groupId'] + ":" + payload['artifactId'] if forge == "mvn" else payload['product']
+        version = payload['version']
+        path = self.get_source_path(payload)
+        package = LizardPackage(forge, product, version, path)
+        metadata = package.metadata()
+        for function in package.functions():
+            m = {}
+            m.update(metadata)
+            m.update(function.metadata())
+            m.update(function.metrics())
+            out_payloads.append(m)
+            logger.debug("callable: {}".format(m) + '\n')
+        return out_payloads
+
+    def get_source_path(self, payload):
+        """
+        TODO: consider moving this to a utility class.
+        For maven, the order to get source code path from different sources:
+        [x] 1. if *-sources.jar is valid, download,
+               uncompress and return the path to the source code
+        [x] 2. else if repoPath is not empty, and
+        [x]    2.1 if commit tag is valid, checkout based on tag and return the path
+        [ ]    2.2 if needed, checkout based on the release date.
+        [ ] 3. else return null
+        """
+        if payload['forge'] == "mvn":
+            if 'sourcesUrl' in payload:
+                sources_url = payload['sourcesUrl']
+                return MavenUtils.download_jar(sources_url, self.base_dir)
+            else:
+                if 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
+                    repo_path = payload['repoPath']
+                    repo_type = payload['repoType']
+                    commit_tag = payload['commitTag']
+                    return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
+        else:
+            source_path = payload['sourcePath']
+            assert os.path.isabs(source_path)
+            return source_path
+
+    def clean_up(self):
+        '''
+        TODO
+        '''
+        # if os.path.exists(self.base_dir):
+        #     shutil.rmtree(self.base_dir)
 
 
 class LizardPackage(Package):
 
     def __init__(self, forge, product, version, path):
-        super.__init__(forge, product, version, path)
+        super().__init__(forge, product, version, path)
         self.timestamp = None
         self._calculate_metrics()
 
@@ -48,7 +111,7 @@ class LizardPackage(Package):
                 self._nloc += file.nloc
                 self._method_count += len(file.function_list)
                 self._complexity += file.CCN
-                self._ND += file.ND
+                # self._ND += file.ND
                 self._token_count += file.token_count
         return
 
@@ -62,19 +125,20 @@ class LizardPackage(Package):
 
 class LizardFile(File):
     def __init__(self, file_info):
+        super().__init__()
         self.filename = file_info.filename
         self.nloc = file_info.nloc
         self.token_count = file_info.token_count
-        self.function_list = [Function(x) for x in file_info.function_list]
+        self.function_list = [LizardFunction(x) for x in file_info.function_list]
         self.average_nloc = file_info.average_nloc
         self.average_token_count = file_info.average_token_count
         self.average_cyclomatic_complexity = file_info.average_cyclomatic_complexity
         self.CCN = file_info.CCN
-        self.ND = file_info.ND
 
 
 class LizardFunction(Function):
     def __init__(self, func_info):
+        super().__init__()
         self.name = func_info.name
         self.long_name = func_info.long_name
         self.filename = func_info.filename

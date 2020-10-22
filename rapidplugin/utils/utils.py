@@ -15,7 +15,9 @@
 
 from zipfile import ZipFile
 from pathlib import Path
+from git import Repo, GitCommandError
 import requests
+import os
 
 
 class MavenUtils:
@@ -35,12 +37,31 @@ class MavenUtils:
             open(file_name, 'wb').write(r.content)
             with ZipFile(file_name, 'r') as zipObj:
                 zipObj.extractall(tmp_dir)
-            # delete jar file
             return tmp_dir
 
     @staticmethod
-    def checkout_version(repo_path, repo_type, version_tag):
-        return
+    def checkout_version(repo_path, repo_type, version_tag, base_dir):
+        base_dir = Path(base_dir)
+        if not base_dir.exists():
+            base_dir.mkdir(parents=True)
+        tmp_dir = base_dir/"tmp"
+        if repo_type == "git":
+            repo = Repo(repo_path)
+            assert repo.tags[version_tag] is not None
+            archive_name = version_tag+".zip"
+            archive_file_name = tmp_dir/archive_name
+            try:
+                # or use repo.archive()
+                repo.git.archive(version_tag, o=archive_file_name)
+                with ZipFile(archive_file_name, 'r') as zipObj:
+                    zipObj.extractall(tmp_dir)
+                return tmp_dir
+            except GitCommandError:
+                return ""
+        if repo_type == "svn":
+            return ""
+        if repo_type == "hg":
+            return ""
 
 
 class KafkaUtils:
@@ -59,6 +80,26 @@ class KafkaUtils:
 
     @staticmethod
     def tailor_input(payload):
+        """
+        Tailor 'payload' from consumed topics,
+        to avoid (big) call graph data
+        adding to 'input' field in the produced topics.
+        """
+        graph = {
+            "graph": {}
+        }
+        modules = {
+            "modules": {}
+        }
+        cha = {
+            "cha": {}
+        }
+        if 'graph' in payload:
+            payload.update(graph)
+        if 'modules' in payload:
+            payload.update(modules)
+        if 'cha' in payload:
+            payload.update(cha)
         return payload
 
 
