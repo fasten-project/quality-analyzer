@@ -71,12 +71,9 @@ class RapidPlugin(KafkaPlugin):
         in_payload = KafkaUtils.tailor_input(payload)
         try:
             KafkaUtils.validate_message(payload)
-        except AssertionError as e:
-            log_message = self.create_message(in_payload, {"Status": "FAILED"})
-            self.emit_message(self.log_topic, log_message,
-                              "[FAILED]", "Parsing json failed.")
-            err_message = self.create_message(in_payload, {"Err": "Missing JSON fields."})
-            self.emit_message(self.error_topic, err_message, "[ERROR]", e)
+        except AssertionError as error:
+            self.log_failure(in_payload, "Parsing payload (JSON) failed.", error)
+
         analyzer = LizardAnalyzer(self.sources_dir)
         out_payloads = analyzer.analyze(payload)
         for out_payload in out_payloads:
@@ -89,10 +86,19 @@ class RapidPlugin(KafkaPlugin):
         try:
             out_message = self.create_message(in_payload, {"payload": out_payload})
             self.emit_message(self.produce_topic, out_message, "succeed", "")
-        except errors.KafkaError as e:
-            log_message = self.create_message(in_payload, {"Status": "FAILED"})
-            self.emit_message(self.log_topic, log_message, "[FAILED]", "Sending message failed.")
-            err_message = self.create_message(in_payload, {"Err": "Message commit error."})
-            self.emit_message(self.error_topic, err_message, "[ERROR]", e)
+        except errors.KafkaError as error:
+            self.log_failure(in_payload, "Sending message failed.", error)
 
+    def log_failure(self, in_payload, failure, error):
+        '''
+        Log a failure and the underlying error to the appropriate topics.
 
+        Arguments:
+          in_payload (JSON): The consumed message for which the failure happened.
+          failure (str)    : Description of what failed.
+          error (str)      : Description of the underlying error (exception).
+        '''
+        log_message = self.create_message(in_payload, {"Status": "FAILED"})
+        self.emit_message(self.log_topic, log_message, "[FAILED]", failure)
+        err_message = self.create_message(in_payload, {"Error": error})
+        self.emit_message(self.error_topic, err_message, "[ERROR]", error)
