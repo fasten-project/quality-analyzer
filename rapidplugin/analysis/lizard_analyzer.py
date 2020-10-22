@@ -48,8 +48,6 @@ class LizardAnalyzer:
             m.update(function.metrics())
             out_payloads.append(m)
             logger.debug("callable: {}".format(m) + '\n')
-        if forge == "mvn":
-            self.clean_up()
         return out_payloads
 
     def get_source_path(self, payload):
@@ -82,8 +80,8 @@ class LizardAnalyzer:
         '''
         TODO
         '''
-        if os.path.exists(self.base_dir):
-            shutil.rmtree(self.base_dir)
+        # if os.path.exists(self.base_dir):
+        #     shutil.rmtree(self.base_dir)
 
 
 class LizardPackage(Package):
