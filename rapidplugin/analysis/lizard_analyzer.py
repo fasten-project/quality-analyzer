@@ -14,6 +14,7 @@
 #
 
 import os
+import shutil
 import logging
 import datetime
 import lizard
@@ -80,6 +81,7 @@ class LizardAnalyzer:
         '''
         TODO: delete all under base_dir
         '''
+
 
 
 class LizardPackage(Package):

@@ -16,6 +16,7 @@
 import os
 import shutil
 import pytest
+from git import Repo
 from utils.utils import MavenUtils, KafkaUtils
 
 DOWNLOAD_URL_DATA = [
@@ -46,7 +47,10 @@ def test_download_jar(url, sources_dir):
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
 def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
-    print(repo_path)
+    repo = Repo.init(repo_path)
+    repo.git.add(".")
+    repo.git.commit(m="first commit.")
+    repo.create_tag('1.0.0')
     source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
     assert str(source_path) == os.path.join(sources_dir, 'tmp')
 

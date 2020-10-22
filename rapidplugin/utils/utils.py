@@ -51,6 +51,7 @@ class MavenUtils:
             archive_name = version_tag+".zip"
             archive_file_name = tmp_dir/archive_name
             try:
+                # or use repo.archive()
                 repo.git.archive(version_tag, o=archive_file_name)
                 with ZipFile(archive_file_name, 'r') as zipObj:
                     zipObj.extractall(tmp_dir)
