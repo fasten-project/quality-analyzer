@@ -1,0 +1,1 @@
+{"forge" : "mvn", "groupId": "fasten-project", "artifactId": "fasten", "version": "1.0.0", "repoPath": "~/repos/fasten"}

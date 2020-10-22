@@ -16,15 +16,10 @@
 
 import os
 import pytest
-import shutil
-from analysis.lizard_analyzer import LizardAnalyzer
+from rapidplugin.tests.sources import sources
+from rapidplugin.tests.sources import fix_sourcePath
+from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 
-
-@pytest.fixture(scope='session')
-def sources(tmp_path_factory):
-    tmp = tmp_path_factory.mktemp("sources")
-    shutil.copytree('tests/resources', tmp, dirs_exist_ok=True)
-    yield tmp
 
 @pytest.fixture(scope='session')
 def analyzer(sources):
@@ -136,9 +131,3 @@ def test_function_metrics(analyzer, sources, record, nloc: int, complexity: int,
     assert metrics['nloc'] == nloc
     assert metrics['complexity'] == complexity
     assert metrics['token_count'] == token_count
-
-def fix_sourcePath(record, tmp_sources_path):
-    if "sourcePath" in record:
-        sourcePath = record["sourcePath"]
-        record.update({"sourcePath" : os.path.join(tmp_sources_path, sourcePath)})
-    return record

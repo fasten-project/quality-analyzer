@@ -1,6 +1,0 @@
-fasten
-lizard
-requests
-gitpython
-pytest
-pytest-mock

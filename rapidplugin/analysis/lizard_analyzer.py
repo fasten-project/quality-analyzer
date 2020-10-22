@@ -14,13 +14,12 @@
 #
 
 import os
-import shutil
 import logging
 import datetime
 import lizard
 
-from domain.package import Package, File, Function
-from utils.utils import MavenUtils
+from rapidplugin.domain.package import Package, File, Function
+from rapidplugin.utils.utils import MavenUtils
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +72,7 @@ class LizardAnalyzer:
                     return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
         else:
             source_path = payload['sourcePath']
-            assert os.path.isabs(source_path)
+            assert os.path.isabs(source_path), "sourcePath is not an absolute path!"
             return source_path
 
     def clean_up(self):

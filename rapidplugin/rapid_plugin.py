@@ -15,8 +15,8 @@
 
 from fasten.plugins.kafka import KafkaPlugin
 import kafka.errors as errors
-from analysis.lizard_analyzer import LizardAnalyzer
-from utils.utils import MavenUtils, KafkaUtils
+from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
+from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 
 
 class RapidPlugin(KafkaPlugin):
@@ -46,10 +46,10 @@ class RapidPlugin(KafkaPlugin):
 
     def version(self):
         return self._version
-    
+
     def description(self):
         return self._description
-    
+
     def free_resource(self):
         pass
 
@@ -62,7 +62,7 @@ class RapidPlugin(KafkaPlugin):
             self.plugin_config.get_all_values()),
                          "Plugin active with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
-    
+
     def consume(self, record):
         '''
         Call-back method to handle a message on self.consume_topic.
@@ -94,15 +94,14 @@ class RapidPlugin(KafkaPlugin):
             out_payloads = analyzer.analyze(in_payload)
             for out_payload in out_payloads:
                 self.produce_payload(in_payload, out_payload)
-                self.log_success(out_payload,
-                                 "Produced quality analysis results for payload.")
+            self.log_success(in_payload, "Produced quality analysis results.")
         except Exception as error:
             self.log_failure(in_payload, "Produce failed for payload.", str(error))
 
     def produce_payload(self, in_payload, out_payload):
         out_message = self.create_message(in_payload, {"payload": out_payload})
         self.emit_message(self.produce_topic, out_message, "", "")
-            
+
     def log_failure(self, in_payload, failure, error):
         '''
         Log a failure and the underlying error to the appropriate topics.
@@ -112,7 +111,8 @@ class RapidPlugin(KafkaPlugin):
           failure (str)    : Description of what failed.
           error (str)      : Description of the underlying error (exception).
         '''
-        log_message = self.create_message(in_payload, {"status": "FAILED"})
+        log_message = self.create_message(in_payload, {"status": "FAILED",
+                                                       "failure": failure})
         self.emit_message(self.log_topic, log_message, "[FAILED]", failure)
         err_message = self.create_message(in_payload, {"error": error})
         self.emit_message(self.error_topic, err_message, "[ERROR]", error)
@@ -124,5 +124,6 @@ class RapidPlugin(KafkaPlugin):
         Arguments:
           in_payload (JSON): The consumed message for which the success happened.
         '''
-        log_message = self.create_message(in_payload, {"status": "SUCCESS"})
+        log_message = self.create_message(in_payload, {"status": "SUCCESS",
+                                                       "success": success})
         self.emit_message(self.log_topic, log_message, "[SUCCESS]", success)
