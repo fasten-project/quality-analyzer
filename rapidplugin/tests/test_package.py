@@ -14,7 +14,7 @@
 #
 
 import pytest
-from domain.package import Package
+from rapidplugin.domain.package import Package
 
 
 @pytest.fixture

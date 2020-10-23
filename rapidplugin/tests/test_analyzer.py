@@ -16,15 +16,10 @@
 
 import os
 import pytest
-import shutil
-from analysis.lizard_analyzer import LizardAnalyzer
+from rapidplugin.tests.sources import sources
+from rapidplugin.tests.sources import fix_sourcePath
+from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 
-
-@pytest.fixture(scope='session')
-def sources(tmp_path_factory):
-    tmp = tmp_path_factory.mktemp("sources")
-    shutil.copytree('tests/resources', tmp, dirs_exist_ok=True)
-    yield tmp
 
 @pytest.fixture(scope='session')
 def analyzer(sources):
@@ -36,16 +31,6 @@ mvn_libai_1_6_12 = {
     "artifactId": "libai",
     "version": "1.6.12",
     "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
-    "repoPath": "",
-    "repoType": "",
-    "commitTag": ""
-}
-mvn_message_with_source_url = {
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m1",
-    "version": "1.0.0",
-    "sourcesUrl": "maven/m1/m1.jar",
     "repoPath": "",
     "repoType": "",
     "commitTag": ""
@@ -136,9 +121,3 @@ def test_function_metrics(analyzer, sources, record, nloc: int, complexity: int,
     assert metrics['nloc'] == nloc
     assert metrics['complexity'] == complexity
     assert metrics['token_count'] == token_count
-
-def fix_sourcePath(record, tmp_sources_path):
-    if "sourcePath" in record:
-        sourcePath = record["sourcePath"]
-        record.update({"sourcePath" : os.path.join(tmp_sources_path, sourcePath)})
-    return record
