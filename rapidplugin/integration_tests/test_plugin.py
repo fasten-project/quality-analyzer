@@ -13,7 +13,6 @@
 # limitations under the License.
 #
 
-import sys
 import pytest
 import rapidplugin.entrypoint as entrypoint
 from rapidplugin.rapid_plugin import RapidPlugin
@@ -23,16 +22,16 @@ from rapidplugin.config import Config
 
 
 @pytest.mark.parametrize('message', [
-# {
-#     "forge": "mvn",
-#     "groupId": "ai.api",
-#     "artifactId": "libai",
-#     "version": "1.6.12",
-#     "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
-#     "repoPath": "",
-#     "repoType": "",
-#     "commitTag": ""
-# },
+{
+    "forge": "mvn",
+    "groupId": "ai.api",
+    "artifactId": "libai",
+    "version": "1.6.12",
+    "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
+    "repoPath": "",
+    "repoType": "",
+    "commitTag": ""
+},
 {
     "forge": "mvn",
     "groupId": "test-mvn",
@@ -98,13 +97,12 @@ def test_consume_messages_failures(message, sources, capsys):
     assert "ERROR" in out
 
 
-def run_plugin(message_str, sources_str):
-    plugin = setup_plugin(sources_str)
-    fixed_message = fix_sourcePath(message_str, sources_str)
+def run_plugin(message, sources_dir):
+    plugin = setup_plugin(sources_dir)
+    fixed_message = fix_sourcePath(message, sources_dir)
     plugin.emit_message(plugin.consume_topic, fixed_message,
                         "[TEST]", fixed_message)
-    consume_one_message(plugin)
-    plugin.consumer.close()
+    consume_one_message_and_close(plugin)
 
 
 def setup_plugin(sources_dir):
@@ -115,9 +113,10 @@ def setup_plugin(sources_dir):
     return RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
 
 
-def consume_one_message(plugin):
+def consume_one_message_and_close(plugin):
     for message in plugin.consumer:
             plugin.consumer.commit()
             record = message.value
             plugin.consume(record)
             break
+    plugin.consumer.close()
