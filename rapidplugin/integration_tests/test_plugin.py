@@ -26,6 +26,7 @@ def plugin(sources):
     parser = entrypoint.get_args_parser()
     config = entrypoint.get_config(parser.parse_args([]))
     config.update_config_value('sources_dir', sources)
+    config.update_config_value('bootstrap_servers', 'localhost:9092')
     yield RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
 
 
