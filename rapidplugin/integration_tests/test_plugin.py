@@ -30,14 +30,19 @@ def plugin(sources):
     yield RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
 
 
-def test_consume_messages_succesfully(plugin, sources):
-    in_msg = {
+def test_consume_messages_succesfully(plugin):
+    my_plugin = plugin
+    src_msg = fix_sourcePath({
         "forge": "PyPI",
         "product": "p1",
         "version": "1.0.0",
         "sourcePath": "pypi/p1"
-    }
-    plugin.emit_message(plugin.consume_topic,
-                        fix_sourcePath(in_msg, sources),
-                        "TEST", "")
-    plugin.consume_messages()
+    }, my_plugin.sources_dir)
+    my_plugin.emit_message(my_plugin.consume_topic,
+                           src_msg,
+                           "TEST", "")
+    for message in my_plugin.consumer:
+            my_plugin.consumer.commit()
+            record = message.value
+            my_plugin.consume(record)
+            break
