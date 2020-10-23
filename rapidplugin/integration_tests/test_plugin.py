@@ -31,18 +31,20 @@ def plugin(sources):
 
 
 def test_consume_messages_succesfully(plugin):
-    my_plugin = plugin
     src_msg = fix_sourcePath({
         "forge": "PyPI",
         "product": "p1",
         "version": "1.0.0",
         "sourcePath": "pypi/p1"
-    }, my_plugin.sources_dir)
-    my_plugin.emit_message(my_plugin.consume_topic,
+    }, plugin.sources_dir)
+    plugin.emit_message(plugin.consume_topic,
                            src_msg,
-                           "TEST", "")
-    for message in my_plugin.consumer:
-            my_plugin.consumer.commit()
+                           "TEST", src_msg)
+    consume_one_message(plugin)
+
+def consume_one_message(plugin):
+    for message in plugin.consumer:
+            plugin.consumer.commit()
             record = message.value
-            my_plugin.consume(record)
+            plugin.consume(record)
             break
