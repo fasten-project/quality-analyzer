@@ -41,3 +41,12 @@ jobs:
     - name: Run unit tests
       run: |
         pytest rapidplugin/tests
+
+    - name: Setup integration environment
+      run: |
+        docker-compose -f kafka-docker/docker-compose-single-broker.yml up -d
+        docker-compose -f kafka-docker/docker-compose-single-broker.yml run --rm wait-for-kafka
+
+    - name: Run integration tests
+      run: |
+        pytest rapidplugin/integration_tests
