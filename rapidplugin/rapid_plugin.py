@@ -100,7 +100,7 @@ class RapidPlugin(KafkaPlugin):
 
     def produce_payload(self, in_payload, out_payload):
         out_message = self.create_message(in_payload, {"payload": out_payload})
-        self.emit_message(self.produce_topic, out_message, "", "")
+        self.emit_message(self.produce_topic, out_message, "[SUCCESS]", out_message)
 
     def log_failure(self, in_payload, failure, error):
         '''
@@ -115,7 +115,7 @@ class RapidPlugin(KafkaPlugin):
                                                        "failure": failure})
         self.emit_message(self.log_topic, log_message, "[FAILED]", failure)
         err_message = self.create_message(in_payload, {"error": error})
-        self.emit_message(self.error_topic, err_message, "[ERROR]", error)
+        self.emit_message(self.error_topic, err_message, "[ERROR]", err_message)
 
     def log_success(self, in_payload, success):
         '''
@@ -126,4 +126,4 @@ class RapidPlugin(KafkaPlugin):
         '''
         log_message = self.create_message(in_payload, {"status": "SUCCESS",
                                                        "success": success})
-        self.emit_message(self.log_topic, log_message, "[SUCCESS]", success)
+        self.emit_message(self.log_topic, log_message, "[SUCCESS]", log_message)
