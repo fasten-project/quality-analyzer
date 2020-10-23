@@ -34,3 +34,10 @@ services:
       KAFKA_CREATE_TOPICS: "fasten.RepoCloner.out:1:1,fasten.RapidPlugin.callable.out:1:1,fasten.RapidPlugin.callable.err:1:1,fasten.RapidPlugin.callable.log:1:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  wait-for-kafka:
+    image: waisbrot/wait
+    links:
+      - kafka
+    environment:
+      - TARGETS=kafka:29092

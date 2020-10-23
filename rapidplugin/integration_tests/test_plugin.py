@@ -23,22 +23,12 @@ from rapidplugin.config import Config
 
 
 @pytest.mark.parametrize('message', [
-{
-    "forge": "mvn",
-    "groupId": "ai.api",
-    "artifactId": "libai",
-    "version": "1.6.12",
-    "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
-    "repoPath": "",
-    "repoType": "",
-    "commitTag": ""
-},
 # {
 #     "forge": "mvn",
-#     "groupId": "test-mvn",
-#     "artifactId": "m1",
-#     "version": "1.0.0",
-#     "sourcesUrl": "maven/m1/m1.jar",
+#     "groupId": "ai.api",
+#     "artifactId": "libai",
+#     "version": "1.6.12",
+#     "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
 #     "repoPath": "",
 #     "repoType": "",
 #     "commitTag": ""
