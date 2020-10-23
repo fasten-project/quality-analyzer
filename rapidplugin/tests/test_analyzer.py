@@ -35,16 +35,6 @@ mvn_libai_1_6_12 = {
     "repoType": "",
     "commitTag": ""
 }
-mvn_message_with_source_url = {
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m1",
-    "version": "1.0.0",
-    "sourcesUrl": "maven/m1/m1.jar",
-    "repoPath": "",
-    "repoType": "",
-    "commitTag": ""
-}
 mvn_message_with_git_repo = {
     "forge": "mvn",
     "groupId": "test-mvn",
