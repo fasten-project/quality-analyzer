@@ -13,38 +13,9 @@
 # limitations under the License.
 #
 
-import json
-import kafka.errors as errors
-from kafka import KafkaConsumer
-from fasten.plugins.kafka import KafkaPlugin
+from rapidplugin.kafka_non_blocking import KafkaPluginNonBlocking
 from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 from rapidplugin.utils.utils import MavenUtils, KafkaUtils
-
-
-class KafkaPluginNonBlocking(KafkaPlugin):
-
-    def set_consumer(self):
-        """Set consumer to read (non-blocking) from consume_topic.
-        """
-        try:
-            assert self.consume_topic is not None
-            assert self.bootstrap_servers is not None
-            assert self.group_id is not None
-            assert self.consumer_timeout_ms is not None
-        except (AssertionError, NameError) as e:
-            self.err(("You should have set consume_topic, bootstrap_servers, "
-                      "group_id, and consumer_timeout_ms"))
-            raise e
-        self.consumer = KafkaConsumer(
-            self.consume_topic,
-            bootstrap_servers=self.bootstrap_servers.split(','),
-            auto_offset_reset='earliest',
-            enable_auto_commit=True,
-            max_poll_records=1,
-            group_id=self.group_id,
-            value_deserializer=lambda x: json.loads(x.decode('utf-8')),
-            consumer_timeout_ms=self.consumer_timeout_ms
-        )
 
 
 class RapidPlugin(KafkaPluginNonBlocking):

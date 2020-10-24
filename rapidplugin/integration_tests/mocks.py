@@ -13,18 +13,20 @@
 # limitations under the License.
 #
 
-from rapidplugin.rapid_plugin import KafkaPluginExtended
+from fasten.plugins.kafka import KafkaPlugin
+from rapidplugin.rapid_plugin import KafkaPluginNonBlocking
 
 
-class MockConsumer(KafkaPluginExtended):
-    def __init__(self, group_id, bootstrap_servers, consume_topic):
+class MockConsumer(KafkaPluginNonBlocking):
+    def __init__(self, group_id, bootstrap_servers, consume_topic, consumer_timeout_ms):
         self.group_id = group_id
         self.consume_topic = consume_topic
         self.bootstrap_servers = bootstrap_servers
+        self.consumer_timeout_ms = consumer_timeout_ms
         self.set_consumer()
 
 
-class MockProducer(KafkaPluginExtended):
+class MockProducer(KafkaPlugin):
     def __init__(self, bootstrap_servers, produce_topic):
         self.produce_topic = produce_topic
         self.bootstrap_servers = bootstrap_servers
