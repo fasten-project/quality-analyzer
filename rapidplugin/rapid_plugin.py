@@ -127,3 +127,5 @@ class RapidPlugin(KafkaPluginNonBlocking):
     def free_resource(self):
         if self.consumer is not None:
             self.consumer.close()
+        if self.producer is not None:
+            self.producer.close()

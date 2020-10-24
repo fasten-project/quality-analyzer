@@ -16,12 +16,86 @@
 import pytest
 import rapidplugin.entrypoint as entrypoint
 from rapidplugin.rapid_plugin import RapidPlugin
+from rapidplugin.integration_tests.mocks import MockConsumer
+from rapidplugin.integration_tests.mocks import MockProducer
 from rapidplugin.tests.sources import sources
 from rapidplugin.tests.sources import fix_sourcePath
 from rapidplugin.config import Config
 
 
-@pytest.mark.parametrize('message', [
+@pytest.fixture(scope='session')
+def config(sources):
+    parser = entrypoint.get_args_parser()
+    config = entrypoint.get_config(parser.parse_args([]))
+    config.update_config_value('sources_dir', str(sources))
+    config.update_config_value('bootstrap_servers', 'localhost:9092')
+    config.update_config_value('group_id', 'RapidPlugin-TEST')
+    config.update_config_value('consumer_timeout_ms', 500)
+    yield config
+
+
+@pytest.fixture()
+def plugin(config):
+    plugin = RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
+    yield plugin
+    plugin.free_resource()
+
+
+@pytest.fixture()
+def mock_in(config):
+    mock = MockProducer(config.get_config_value('bootstrap_servers'),
+                        config.get_config_value('consume_topic')) 
+    yield mock
+    mock.free_resource()
+
+    
+@pytest.fixture()
+def mock_out(config):
+    mock = MockConsumer('MockConsumerOut',
+                        config.get_config_value('bootstrap_servers'),
+                        config.get_config_value('produce_topic'),
+                        config.get_config_value('consumer_timeout_ms'))
+    mock.skip_messages()
+    yield mock
+    mock.free_resource()
+
+
+@pytest.fixture()
+def mock_log(config):
+    mock = MockConsumer('MockConsumerLog',
+                        config.get_config_value('bootstrap_servers'),
+                        config.get_config_value('log_topic'),
+                        config.get_config_value('consumer_timeout_ms'))
+    mock.skip_messages()
+    yield mock
+    mock.free_resource()
+
+
+@pytest.fixture()
+def mock_err(config):
+    mock = MockConsumer('MockConsumerErr',
+                        config.get_config_value('bootstrap_servers'),
+                        config.get_config_value('err_topic'),
+                        config.get_config_value('consumer_timeout_ms'))
+    mock.skip_messages()
+    yield mock
+    mock.free_resource()
+
+
+@pytest.fixture()
+def plugin_run(plugin, config, mock_in, mock_out, mock_log, mock_err, in_message):
+    fixed_in_message = fix_sourcePath(in_message,
+                                      config.get_config_value('sources_dir'))
+    mock_in.emit_message(mock_in.produce_topic, fixed_in_message,
+                         "[TEST]", fixed_in_message)
+    plugin.consume_messages()
+    mock_out.consume_messages()
+    mock_log.consume_messages()
+    mock_err.consume_messages()
+    yield mock_out.messages, mock_log.messages, mock_err.messages,
+
+
+@pytest.mark.parametrize('in_message', [
 {
     "forge": "mvn",
     "groupId": "ai.api",
@@ -32,36 +106,36 @@ from rapidplugin.config import Config
     "repoType": "",
     "commitTag": ""
 },
-{
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m1",
-    "version": "1.0.0",
-    "sourcesUrl": "",
-    "repoPath": "maven/git/m1",
-    "repoType": "git",
-    "commitTag": "1.0.0"
-},
-{
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m2",
-    "version": "1.0.0",
-    "sourcesUrl": "",
-    "repoPath": "maven/svn/m2",
-    "repoType": "svn",
-    "commitTag": "1.0.0"
-},
-{
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m3",
-    "version": "1.0.0",
-    "sourcesUrl": "",
-    "repoPath": "maven/hg/m3",
-    "repoType": "hg",
-    "commitTag": "1.0.0"
-},
+# {
+#     "forge": "mvn",
+#     "groupId": "test-mvn",
+#     "artifactId": "m1",
+#     "version": "1.0.0",
+#     "sourcesUrl": "",
+#     "repoPath": "maven/git/m1",
+#     "repoType": "git",
+#     "commitTag": "1.0.0"
+# },
+# {
+#     "forge": "mvn",
+#     "groupId": "test-mvn",
+#     "artifactId": "m2",
+#     "version": "1.0.0",
+#     "sourcesUrl": "",
+#     "repoPath": "maven/svn/m2",
+#     "repoType": "svn",
+#     "commitTag": "1.0.0"
+# },
+# {
+#     "forge": "mvn",
+#     "groupId": "test-mvn",
+#     "artifactId": "m3",
+#     "version": "1.0.0",
+#     "sourcesUrl": "",
+#     "repoPath": "maven/hg/m3",
+#     "repoType": "hg",
+#     "commitTag": "1.0.0"
+# },
 {
     "forge": "debian",
     "product": "d1",
@@ -74,15 +148,14 @@ from rapidplugin.config import Config
     "version": "1.0.0",
     "sourcePath": "pypi/p1"
 }])
-def test_consume_messages_successes(message, sources, capsys):
-    run_plugin(message, sources)
-    out, err = capsys.readouterr()
-    assert "SUCCESS" in out
-    assert "FAILURE" not in out
-    assert "ERROR" not in out
+def test_successes(plugin_run, in_message):
+    out, log, err = plugin_run
+    assert len(out) >= 1
+    assert len(log) >= 1
+    assert len(err) == 0
 
 
-@pytest.mark.parametrize('message', [
+@pytest.mark.parametrize('in_message', [
 {
     "groupId": "ai.api",
     "artifactId": "libai",
@@ -90,27 +163,14 @@ def test_consume_messages_successes(message, sources, capsys):
     "repoPath": "",
     "repoType": "",
     "commitTag": ""
+},
+{
+    "forge": "PyPI",
+    "product": "p1",
+    "version": "1.0.0"
 }])
-def test_consume_messages_failures(message, sources, capsys):
-    run_plugin(message, sources)
-    out, err = capsys.readouterr()
-    assert "FAILURE" in out
-    assert "ERROR" in out
-
-
-def run_plugin(message, sources_dir):
-    plugin = setup_plugin(sources_dir)
-    fixed_message = fix_sourcePath(message, sources_dir)
-    plugin.emit_message(plugin.consume_topic, fixed_message,
-                        "[TEST]", fixed_message)
-    plugin.consume_messages()
-    plugin.free_resource()
-
-
-def setup_plugin(sources_dir):
-    parser = entrypoint.get_args_parser()
-    config = entrypoint.get_config(parser.parse_args([]))
-    config.update_config_value('sources_dir', sources_dir)
-    config.update_config_value('bootstrap_servers', 'localhost:9092')
-    config.update_config_value('group_id', 'RapidPlugin-TEST')
-    return RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
+def test_failures(plugin_run, in_message):
+    out, log, err = plugin_run
+    assert len(out) == 0
+    assert len(log) >= 1
+    assert len(err) >= 1
