@@ -13,13 +13,12 @@
 # limitations under the License.
 #
 
-from fasten.plugins.kafka import KafkaPlugin
-import kafka.errors as errors
+from rapidplugin.kafka_non_blocking import KafkaPluginNonBlocking
 from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 
 
-class RapidPlugin(KafkaPlugin):
+class RapidPlugin(KafkaPluginNonBlocking):
     '''
     This main class handles consuming from Kafka, executing code analysis, 
     and producing the resulting payload back into a Kafka topic.
@@ -37,6 +36,7 @@ class RapidPlugin(KafkaPlugin):
         self.error_topic = self.plugin_config.get_config_value('err_topic')
         self.group_id = self.plugin_config.get_config_value('group_id')
         self.sources_dir = self.plugin_config.get_config_value('sources_dir')
+        self.consumer_timeout_ms = self.plugin_config.get_config_value('consumer_timeout_ms')
         self.set_consumer()
         self.set_producer()
         self.announce()
@@ -50,15 +50,11 @@ class RapidPlugin(KafkaPlugin):
     def description(self):
         return self._description
 
-    def free_resource(self):
-        pass
-
     def announce(self):
         '''
         Announces the activation of this plugin instance to the log_topic.
         '''
         self.log_success(format(
-
             self.plugin_config.get_all_values()),
                          "Plugin active with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
@@ -127,3 +123,9 @@ class RapidPlugin(KafkaPlugin):
         log_message = self.create_message(in_payload, {"status": "SUCCESS",
                                                        "success": success})
         self.emit_message(self.log_topic, log_message, "[SUCCESS]", log_message)
+
+    def free_resource(self):
+        if self.consumer is not None:
+            self.consumer.close()
+        if self.producer is not None:
+            self.producer.close()
