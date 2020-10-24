@@ -13,36 +13,41 @@
 # limitations under the License.
 #
 
-from fasten.plugins.kafka import KafkaPlugin
+import json
 import kafka.errors as errors
+from kafka import KafkaConsumer
+from fasten.plugins.kafka import KafkaPlugin
 from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 
 
-class KafkaPluginExtended(KafkaPlugin):
-    def __init(self, bootstrap_servers):
-        super().__init__(bootstrap_servers)
+class KafkaPluginNonBlocking(KafkaPlugin):
 
-        
-    def consume_n_messages(self, n = 1):
+    def set_consumer(self):
+        """Set consumer to read (non-blocking) from consume_topic.
         """
-        Consume n messages from Kafka, then return.
+        try:
+            assert self.consume_topic is not None
+            assert self.bootstrap_servers is not None
+            assert self.group_id is not None
+            assert self.consumer_timeout_ms is not None
+        except (AssertionError, NameError) as e:
+            self.err(("You should have set consume_topic, bootstrap_servers, "
+                      "group_id, and consumer_timeout_ms"))
+            raise e
+        self.consumer = KafkaConsumer(
+            self.consume_topic,
+            bootstrap_servers=self.bootstrap_servers.split(','),
+            auto_offset_reset='earliest',
+            enable_auto_commit=True,
+            max_poll_records=1,
+            group_id=self.group_id,
+            value_deserializer=lambda x: json.loads(x.decode('utf-8')),
+            consumer_timeout_ms=self.consumer_timeout_ms
+        )
 
-        Arguments:
-          n (int): number of messages to consume
-        """
-        assert n > 0, "Specific more than 0 message to consume."
-        assert self.consumer is not None, "Use set_consumer before using consume_n_messages"
-        for message in self.consumer:
-            self.consumer.commit()
-            record = message.value
-            self.log("{}: Consuming: {}".format(
-                str(datetime.datetime.now()), record))
-            self.consume(record)
-            break
 
-        
-class RapidPlugin(KafkaPluginExtended):
+class RapidPlugin(KafkaPluginNonBlocking):
     '''
     This main class handles consuming from Kafka, executing code analysis, 
     and producing the resulting payload back into a Kafka topic.
@@ -60,6 +65,7 @@ class RapidPlugin(KafkaPluginExtended):
         self.error_topic = self.plugin_config.get_config_value('err_topic')
         self.group_id = self.plugin_config.get_config_value('group_id')
         self.sources_dir = self.plugin_config.get_config_value('sources_dir')
+        self.consumer_timeout_ms = self.plugin_config.get_config_value('consumer_timeout_ms')
         self.set_consumer()
         self.set_producer()
         self.announce()
@@ -72,9 +78,6 @@ class RapidPlugin(KafkaPluginExtended):
 
     def description(self):
         return self._description
-
-    def free_resource(self):
-        pass
 
     def announce(self):
         '''

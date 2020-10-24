@@ -52,10 +52,15 @@ def get_args_parser():
     args_parser.add_argument('--group_id', type=str,
                              default='RapidPlugin',
                              help="Kafka consumer group ID to which the consumer belongs.")
+
+    args_parser.add_argument('--consumer_timeout_ms', type=int,
+                             default=1000,
+                             help="Timeout in milliseconds to consume messages from topic.")
     
-    args_parser.add_argument('--sleep_time', type=int,
+    args_parser.add_argument('--consumption_delay_sec', type=int,
                              default=1,
-                             help="Time to sleep in between each message consumption (in sec).")
+                             help="Delay in seconds between each message consumption call.")
+    
     args_parser.add_argument('--sources_dir', type=str,
                              default='src',
                              help="Base directory for temporary storing downloaded source code.")
@@ -69,7 +74,8 @@ def get_config(args):
     c.add_config_value('err_topic', args.err_topic)
     c.add_config_value('log_topic', args.log_topic)
     c.add_config_value('group_id', args.group_id)
-    c.add_config_value('sleep_time', args.sleep_time)
+    c.add_config_value('consumption_delay_sec', args.consumption_delay_sec)
+    c.add_config_value('consumer_timeout_ms', args.consumer_timeout_ms)
     c.add_config_value('sources_dir', args.sources_dir)
     return c
 
@@ -87,8 +93,8 @@ def main():
 
     # Run forever
     while True:
-        plugin.consume_n_messages(1)
-        sleep(plugin_config.get_config_value('sleep_time'))
+        plugin.consume_messages()
+        sleep(plugin_config.get_config_value('consumption_delay_sec'))
 
 if __name__ == "__main__":
     main()

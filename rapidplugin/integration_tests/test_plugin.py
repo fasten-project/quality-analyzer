@@ -103,8 +103,8 @@ def run_plugin(message, sources_dir):
     fixed_message = fix_sourcePath(message, sources_dir)
     plugin.emit_message(plugin.consume_topic, fixed_message,
                         "[TEST]", fixed_message)
-    plugin.consume_n_messages(1)
-    # plugin.free_resource()
+    plugin.consume_messages()
+    plugin.free_resource()
 
 
 def setup_plugin(sources_dir):
@@ -112,4 +112,5 @@ def setup_plugin(sources_dir):
     config = entrypoint.get_config(parser.parse_args([]))
     config.update_config_value('sources_dir', sources_dir)
     config.update_config_value('bootstrap_servers', 'localhost:9092')
+    config.update_config_value('group_id', 'RapidPlugin-TEST')
     return RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
