@@ -87,7 +87,7 @@ def main():
 
     # Run forever
     while True:
-        plugin.consume_messages()
+        plugin.consume_n_messages(1)
         sleep(plugin_config.get_config_value('sleep_time'))
 
 if __name__ == "__main__":

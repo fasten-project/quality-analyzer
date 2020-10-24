@@ -77,6 +77,7 @@ from rapidplugin.config import Config
 def test_consume_messages_successes(message, sources, capsys):
     run_plugin(message, sources)
     out, err = capsys.readouterr()
+    assert "SUCCESS" in out
     assert "FAILURE" not in out
     assert "ERROR" not in out
 
@@ -102,7 +103,8 @@ def run_plugin(message, sources_dir):
     fixed_message = fix_sourcePath(message, sources_dir)
     plugin.emit_message(plugin.consume_topic, fixed_message,
                         "[TEST]", fixed_message)
-    consume_one_message_and_close(plugin)
+    plugin.consume_n_messages(1)
+    # plugin.free_resource()
 
 
 def setup_plugin(sources_dir):
@@ -111,12 +113,3 @@ def setup_plugin(sources_dir):
     config.update_config_value('sources_dir', sources_dir)
     config.update_config_value('bootstrap_servers', 'localhost:9092')
     return RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
-
-
-def consume_one_message_and_close(plugin):
-    for message in plugin.consumer:
-            plugin.consumer.commit()
-            record = message.value
-            plugin.consume(record)
-            break
-    plugin.consumer.close()

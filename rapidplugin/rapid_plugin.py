@@ -19,7 +19,30 @@ from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 
 
-class RapidPlugin(KafkaPlugin):
+class KafkaPluginExtended(KafkaPlugin):
+    def __init(self, bootstrap_servers):
+        super().__init__(bootstrap_servers)
+
+        
+    def consume_n_messages(self, n = 1):
+        """
+        Consume n messages from Kafka, then return.
+
+        Arguments:
+          n (int): number of messages to consume
+        """
+        assert n > 0, "Specific more than 0 message to consume."
+        assert self.consumer is not None, "Use set_consumer before using consume_n_messages"
+        for message in self.consumer:
+            self.consumer.commit()
+            record = message.value
+            self.log("{}: Consuming: {}".format(
+                str(datetime.datetime.now()), record))
+            self.consume(record)
+            break
+
+        
+class RapidPlugin(KafkaPluginExtended):
     '''
     This main class handles consuming from Kafka, executing code analysis, 
     and producing the resulting payload back into a Kafka topic.
@@ -58,7 +81,6 @@ class RapidPlugin(KafkaPlugin):
         Announces the activation of this plugin instance to the log_topic.
         '''
         self.log_success(format(
-
             self.plugin_config.get_all_values()),
                          "Plugin active with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
@@ -127,3 +149,7 @@ class RapidPlugin(KafkaPlugin):
         log_message = self.create_message(in_payload, {"status": "SUCCESS",
                                                        "success": success})
         self.emit_message(self.log_topic, log_message, "[SUCCESS]", log_message)
+
+    def free_resource(self):
+        if self.consumer is not None:
+            self.consumer.close()
