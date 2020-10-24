@@ -14,7 +14,7 @@
 #
 
 from fasten.plugins.kafka import KafkaPlugin
-from rapidplugin.rapid_plugin import KafkaPluginNonBlocking
+from rapidplugin.kafka_non_blocking import KafkaPluginNonBlocking
 
 
 class MockConsumer(KafkaPluginNonBlocking):
