@@ -41,7 +41,6 @@ class RapidPlugin(KafkaPluginNonBlocking):
         self.consumer_timeout_ms = self.plugin_config.get_config_value('consumer_timeout_ms')
         self.set_consumer()
         self.set_producer()
-        self.announce_activation()
 
     def name(self):
         return self._name
@@ -53,16 +52,24 @@ class RapidPlugin(KafkaPluginNonBlocking):
         return self._description
 
     def run_forever(self):
-        while True:
-            sleep(self.plugin_config.get_config_value('consumption_delay_sec'))
+        self.announce_activation()
+        sleep_time = self.plugin_config.get_config_value('consumption_delay_sec')
+        try:
+            while True:
+                self.flush_logs()
+                sleep(sleep_time)
             try:
                 self.consume_messages()
             except BaseException as e:
-                self.handle_failure({},
-                                    'Fatal exception while consuming.', e)
+                self.handle_failure({}, 'Fatal exception while consuming.', e)
                 raise e
-            finally:
-                self.free_resource()
+        finally:
+            self.announce_termination()
+            self.free_resource()
+
+    def flush_logs(self):
+        self.logs.flush()
+        self.errors.flush()
 
     def announce_activation(self):
         '''
@@ -73,13 +80,13 @@ class RapidPlugin(KafkaPluginNonBlocking):
                          "Plugin active with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
 
-    def announce_deactivation(self):
+    def announce_termination(self):
         '''
-        Announces the de-activation of this plugin instance to the log_topic.
+        Announces the termination of this plugin instance to the log_topic.
         '''
         self.handle_success(format(
             self.plugin_config.get_all_values()),
-                         "Plugin de-activated with configuration " +
+                         "Plugin terminated with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
 
     def consume(self, record):
@@ -165,5 +172,4 @@ class RapidPlugin(KafkaPluginNonBlocking):
         if self.consumer is not None:
             self.consumer.close()
         if self.producer is not None:
-            self.announce_deactivation()
             self.producer.close()
