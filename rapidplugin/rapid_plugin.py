@@ -54,7 +54,7 @@ class RapidPlugin(KafkaPluginNonBlocking):
 
     def run_forever(self):
         while True:
-            sleep(self.plugin.get_config_value('consumption_delay_sec'))
+            sleep(self.plugin_config.get_config_value('consumption_delay_sec'))
             try:
                 self.consume_messages()
             except BaseException as e:
