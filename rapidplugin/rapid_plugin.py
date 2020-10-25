@@ -137,7 +137,8 @@ class RapidPlugin(KafkaPluginNonBlocking):
         '''
         log_message = self.create_message(in_payload, {"status": "FAILURE",
                                                        "failure": failure})
-        self.emit_message(self.log_topic, log_message, "[FAILURE]", failure)
+        self.emit_message(self.log_topic, log_message, "[FAILURE]",
+                          log_message)
         err_message = self.create_message(in_payload, {"error": error})
         self.err(err_message)
         self.emit_message(self.error_topic, err_message, "[ERROR]",
