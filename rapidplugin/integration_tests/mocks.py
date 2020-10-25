@@ -18,7 +18,8 @@ from rapidplugin.kafka_non_blocking import KafkaPluginNonBlocking
 
 
 class MockConsumer(KafkaPluginNonBlocking):
-    def __init__(self, group_id, bootstrap_servers, consume_topic, consumer_timeout_ms):
+    def __init__(self, group_id, bootstrap_servers, consume_topic,
+                 consumer_timeout_ms):
         super().__init__(bootstrap_servers)
         self.group_id = group_id
         self.consume_topic = consume_topic
@@ -26,28 +27,23 @@ class MockConsumer(KafkaPluginNonBlocking):
         self.set_consumer()
         self.messages = []
 
-
     def name(self):
         return "MockConsumer"
-
 
     def version(self):
         return "TEST"
 
-
     def description(self):
         return "TEST"
-    
 
     def consume(self, record):
         self.messages.append(record)
 
-        
     def free_resource(self):
         if self.consumer is not None:
             self.consumer.close()
 
-            
+
 class MockProducer(KafkaPlugin):
     def __init__(self, bootstrap_servers, produce_topic):
         super().__init__(bootstrap_servers)
@@ -55,18 +51,14 @@ class MockProducer(KafkaPlugin):
         self.set_producer()
         self.producer.partitions_for(self.produce_topic)
 
-
     def name(self):
         return "MockProducer"
-
 
     def version(self):
         return "TEST"
 
-
     def description(self):
         return "TEST"
-
 
     def consume(self):
         pass

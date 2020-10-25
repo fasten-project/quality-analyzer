@@ -20,7 +20,6 @@ from rapidplugin.integration_tests.mocks import MockConsumer
 from rapidplugin.integration_tests.mocks import MockProducer
 from rapidplugin.tests.sources import sources
 from rapidplugin.tests.sources import fix_sourcePath
-from rapidplugin.config import Config
 
 
 @pytest.fixture(scope='session')
@@ -44,11 +43,11 @@ def plugin(config):
 @pytest.fixture()
 def mock_in(config):
     mock = MockProducer(config.get_config_value('bootstrap_servers'),
-                        config.get_config_value('consume_topic')) 
+                        config.get_config_value('consume_topic'))
     yield mock
     mock.free_resource()
 
-    
+
 @pytest.fixture()
 def mock_out(config):
     mock = MockConsumer('MockConsumerOut',
@@ -83,7 +82,8 @@ def mock_err(config):
 
 
 @pytest.fixture()
-def plugin_run(plugin, config, mock_in, mock_out, mock_log, mock_err, in_message):
+def plugin_run(plugin, config, mock_in, mock_out, mock_log, mock_err,
+               in_message):
     fixed_in_message = fix_sourcePath(in_message,
                                       config.get_config_value('sources_dir'))
     mock_in.emit_message(mock_in.produce_topic, fixed_in_message,
@@ -96,58 +96,58 @@ def plugin_run(plugin, config, mock_in, mock_out, mock_log, mock_err, in_message
 
 
 @pytest.mark.parametrize('in_message', [
-{
-    "forge": "mvn",
-    "groupId": "ai.api",
-    "artifactId": "libai",
-    "version": "1.6.12",
-    "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
-    "repoPath": "",
-    "repoType": "",
-    "commitTag": ""
-},
-# {
-#     "forge": "mvn",
-#     "groupId": "test-mvn",
-#     "artifactId": "m1",
-#     "version": "1.0.0",
-#     "sourcesUrl": "",
-#     "repoPath": "maven/git/m1",
-#     "repoType": "git",
-#     "commitTag": "1.0.0"
-# },
-# {
-#     "forge": "mvn",
-#     "groupId": "test-mvn",
-#     "artifactId": "m2",
-#     "version": "1.0.0",
-#     "sourcesUrl": "",
-#     "repoPath": "maven/svn/m2",
-#     "repoType": "svn",
-#     "commitTag": "1.0.0"
-# },
-# {
-#     "forge": "mvn",
-#     "groupId": "test-mvn",
-#     "artifactId": "m3",
-#     "version": "1.0.0",
-#     "sourcesUrl": "",
-#     "repoPath": "maven/hg/m3",
-#     "repoType": "hg",
-#     "commitTag": "1.0.0"
-# },
-{
-    "forge": "debian",
-    "product": "d1",
-    "version": "1.0.0",
-    "sourcePath": "debian/d1"
-},
-{
-    "forge": "PyPI",
-    "product": "p1",
-    "version": "1.0.0",
-    "sourcePath": "pypi/p1"
-}])
+    {
+        "forge": "mvn",
+        "groupId": "ai.api",
+        "artifactId": "libai",
+        "version": "1.6.12",
+        "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
+        "repoPath": "",
+        "repoType": "",
+        "commitTag": ""
+    },
+    # {
+    #     "forge": "mvn",
+    #     "groupId": "test-mvn",
+    #     "artifactId": "m1",
+    #     "version": "1.0.0",
+    #     "sourcesUrl": "",
+    #     "repoPath": "maven/git/m1",
+    #     "repoType": "git",
+    #     "commitTag": "1.0.0"
+    # },
+    # {
+    #     "forge": "mvn",
+    #     "groupId": "test-mvn",
+    #     "artifactId": "m2",
+    #     "version": "1.0.0",
+    #     "sourcesUrl": "",
+    #     "repoPath": "maven/svn/m2",
+    #     "repoType": "svn",
+    #     "commitTag": "1.0.0"
+    # },
+    # {
+    #     "forge": "mvn",
+    #     "groupId": "test-mvn",
+    #     "artifactId": "m3",
+    #     "version": "1.0.0",
+    #     "sourcesUrl": "",
+    #     "repoPath": "maven/hg/m3",
+    #     "repoType": "hg",
+    #     "commitTag": "1.0.0"
+    # },
+    {
+        "forge": "debian",
+        "product": "d1",
+        "version": "1.0.0",
+        "sourcePath": "debian/d1"
+    },
+    {
+        "forge": "PyPI",
+        "product": "p1",
+        "version": "1.0.0",
+        "sourcePath": "pypi/p1"
+    }])
 def test_successes(plugin_run, in_message):
     out, log, err = plugin_run
     assert len(out) >= 1
@@ -156,19 +156,19 @@ def test_successes(plugin_run, in_message):
 
 
 @pytest.mark.parametrize('in_message', [
-{
-    "groupId": "ai.api",
-    "artifactId": "libai",
-    "version": "1.6.12",
-    "repoPath": "",
-    "repoType": "",
-    "commitTag": ""
-},
-{
-    "forge": "PyPI",
-    "product": "p1",
-    "version": "1.0.0"
-}])
+    {
+        "groupId": "ai.api",
+        "artifactId": "libai",
+        "version": "1.6.12",
+        "repoPath": "",
+        "repoType": "",
+        "commitTag": ""
+    },
+    {
+        "forge": "PyPI",
+        "product": "p1",
+        "version": "1.0.0"
+    }])
 def test_failures(plugin_run, in_message):
     out, log, err = plugin_run
     assert len(out) == 0
