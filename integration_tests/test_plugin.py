@@ -14,10 +14,10 @@
 #
 
 import pytest
-import rapidplugin.entrypoint as entrypoint
+import entrypoint as entrypoint
+from integration_tests.mocks import MockConsumer
+from integration_tests.mocks import MockProducer
 from rapidplugin.rapid_plugin import RapidPlugin
-from rapidplugin.integration_tests.mocks import MockConsumer
-from rapidplugin.integration_tests.mocks import MockProducer
 from rapidplugin.tests.sources import sources
 from rapidplugin.tests.sources import fix_sourcePath
 
