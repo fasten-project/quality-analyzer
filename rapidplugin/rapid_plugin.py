@@ -56,6 +56,7 @@ class RapidPlugin(KafkaPluginNonBlocking):
         sleep_time = self.plugin_config.get_config_value('consumption_delay_sec')
         try:
             while True:
+                self.announce_heartbeat()
                 self.flush_logs()
                 sleep(sleep_time)
             try:
@@ -67,17 +68,22 @@ class RapidPlugin(KafkaPluginNonBlocking):
             self.announce_termination()
             self.free_resource()
 
-    def flush_logs(self):
-        self.logs.flush()
-        self.errors.flush()
-
     def announce_activation(self):
         '''
         Announces the activation of this plugin instance to the log_topic.
         '''
         self.handle_success(format(
             self.plugin_config.get_all_values()),
-                         "Plugin active with configuration " +
+                         "Plugin activated with configuration " +
+                         "'" + self.plugin_config.get_config_name() + "'")
+
+    def announce_heartbeat(self):
+        '''
+        Announces a heartbeat of the running plugin to the log_topic.
+        '''
+        self.handle_success(format(
+            self.plugin_config.get_all_values()),
+                         "Plugin heartbeat with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
 
     def announce_termination(self):
@@ -142,14 +148,14 @@ class RapidPlugin(KafkaPluginNonBlocking):
           failure (str)    : Description of what failed.
           error (str)      : Description of the underlying error (exception).
         '''
-        log_message = self.create_message(in_payload, {"status": "FAILURE",
-                                                       "failure": failure})
-        self.emit_message(self.log_topic, log_message, "[FAILURE]",
-                          log_message)
         err_message = self.create_message(in_payload, {"error": error})
         self.err(err_message)
         self.emit_message(self.error_topic, err_message, "[ERROR]",
                           err_message)
+        log_message = self.create_message(in_payload, {"status": "FAILURE",
+                                                       "failure": failure})
+        self.emit_message(self.log_topic, log_message, "[FAILURE]",
+                          log_message)
 
     def handle_success(self, in_payload, success):
         '''
@@ -163,13 +169,28 @@ class RapidPlugin(KafkaPluginNonBlocking):
         self.emit_message(self.log_topic, log_message, "[SUCCESS]",
                           log_message)
 
-    def err(self, err_message):
-        super().err("{}: Error: {}".format(
-            str(datetime.datetime.now()), err_message
+    def log(self, message):
+        super().log("{}: {}".format(
+            str(datetime.datetime.now()), message
         ))
 
+    def err(self, error):
+        super().err("{}: {}".format(
+            str(datetime.datetime.now()), error
+        ))
+
+    def flush_logs(self):
+        self.logs.flush()
+        self.errors.flush()
+
     def free_resource(self):
-        if self.consumer is not None:
-            self.consumer.close()
-        if self.producer is not None:
-            self.producer.close()
+        try:
+            if self.consumer is not None:
+                self.consumer.close()
+            if self.producer is not None:
+                self.producer.close()
+        except BaseException as e:
+            self.err('Fatal exception while freeing resources: ' + str(e))
+            raise e
+        else:
+            self.log('Resources freed successfully.')

@@ -36,6 +36,7 @@ def config(sources):
 @pytest.fixture()
 def plugin(config):
     plugin = RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
+    plugin.skip_messages()
     yield plugin
     plugin.free_resource()
 
