@@ -21,6 +21,8 @@ from fasten.plugins.kafka import KafkaPlugin
 
 class KafkaPluginNonBlocking(KafkaPlugin):
 
+    consumer_timeout_ms = None
+
     def set_consumer(self):
         """Set consumer to read (non-blocking) from consume_topic.
         """
@@ -43,7 +45,6 @@ class KafkaPluginNonBlocking(KafkaPlugin):
             value_deserializer=lambda x: json.loads(x.decode('utf-8')),
             consumer_timeout_ms=self.consumer_timeout_ms
         )
-
 
     def skip_messages(self):
         assert self.consumer is not None, "Consumer needs to be set before messages can ben consumed."
