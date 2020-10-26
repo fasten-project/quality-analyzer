@@ -93,7 +93,7 @@ def plugin_run(plugin, config, mock_in, mock_out, mock_log, mock_err,
     mock_out.consume_messages()
     mock_log.consume_messages()
     mock_err.consume_messages()
-    yield mock_out.messages, mock_log.messages, mock_err.messages,
+    yield mock_out.messages, mock_log.messages, mock_err.messages
 
 
 @pytest.mark.parametrize('in_message', [
