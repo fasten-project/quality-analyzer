@@ -25,7 +25,6 @@ class MavenUtils:
 
     @staticmethod
     def download_jar(url, base_dir):
-        assert url != "", "Invalid URL for 'sources.jar'."
         base_dir = Path(base_dir)
         if not base_dir.exists():
             base_dir.mkdir(parents=True)
@@ -44,6 +43,8 @@ class MavenUtils:
             base_dir.mkdir(parents=True)
         tmp_dir = base_dir/"tmp"
         assert repo_type in {"git", "svn", "hg"}, "Unknown repo type: '{}'.".format(repo_type)
+        assert repo_path != "", "Empty repo_path."
+        assert version_tag != "", "Empty version_tag."
         if repo_type == "git":
             repo = Repo(repo_path)
             assert repo.tags[version_tag] is not None

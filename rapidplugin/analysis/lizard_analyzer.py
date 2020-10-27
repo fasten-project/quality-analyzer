@@ -64,7 +64,8 @@ class LizardAnalyzer:
         if payload['forge'] == "mvn":
             if 'sourcesUrl' in payload:
                 sources_url = payload['sourcesUrl']
-                source_path = MavenUtils.download_jar(sources_url, self.base_dir)
+                if sources_url != "":
+                    source_path = MavenUtils.download_jar(sources_url, self.base_dir)
             elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
                 repo_path = payload['repoPath']
                 repo_type = payload['repoType']
