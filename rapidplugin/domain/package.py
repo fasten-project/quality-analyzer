@@ -19,28 +19,24 @@ Module, File, Method.
 """
 
 import logging
-from typing import List, Set, Dict, Tuple, Optional
-import lizard
-# from lizard_ext.lizardio import LizardExtension as FanInOut
-from lizard_ext.lizardnd import LizardExtension as ND
+from abc import ABC, abstractmethod
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
 
-class Package:
+class Package(ABC):
     """
-    This class defines the metadata of a package,
-    extracted from FASTEN call graph Json file.
+    This class defines the metadata of a package.
     """
 
     def __init__(self, forge, product, version, path):
         self.forge = forge
         self.product = product
         self.version = version
-        self.path = path
+        self.source_path = path
         self._file_list = []
-        self._func_list = []  # List[Function] functions identified from Lizard analysis
-        self._method_list = []  # List[Methods] methods identified from cg
+        self._func_list = []
         # aggregated metric
         self._method_count = None
         self._nloc = None
@@ -64,28 +60,18 @@ class Package:
         self._calculate_metrics()
         return self._token_count
 
+    @abstractmethod
     def _calculate_metrics(self):
-        paths = [self.path]
-        exc_patterns = ["*/test/*"]
-        ext = None
-        lans = ["java"]
-        if self._nloc is None:
-            self._nloc = 0
-            self._method_count = 0
-            self._complexity = 0
-            self._token_count = 0
-            self._ND = 0
-            analyser = lizard.analyze(paths, exc_patterns, 1, ext, lans)
-            for f in analyser:
-                self._file_list.append(File(f))
-                for fun in f.function_list:
-                    self._func_list.append(Function(fun))
-                self._nloc += f.nloc
-                self._method_count += len(f.function_list)
-                self._complexity += f.CCN
-                self._ND += f.ND
-                self._token_count += f.token_count
-        return
+        """calculate metrics.
+
+        Args:
+
+        """
+    @abstractmethod
+    def _get_analyzer(self):
+        """get analyzer name and version.
+
+        """
 
     def files(self):
         return self._file_list
@@ -93,30 +79,46 @@ class Package:
     def functions(self):
         return self._func_list
 
+    def metadata(self):
+        language = {
+            'mvn': 'java',
+            'debian': 'c',
+            'PyPI': 'python'
+        }
+        m = {
+            "product": self.product,
+            "version": self.version,
+            "forge": self.forge,
+            "language": language[self.forge]
+        }
+        m.update(self._get_analyzer())
+        return m
+
     def metrics(self):
         return {
-            "nloc": self.nloc(),
-            "method_count": self.method_count(),
-            "complexity": self.complexity(),
-            "token_count": self.token_count(),
-            "file_list": [f.metrics() for f in self.files()],
+            "metrics": {
+                "nloc": self.nloc(),
+                "method_count": self.method_count(),
+                "complexity": self.complexity(),
+                "token_count": self.token_count()
+            }
         }
 
 
-class File:
-    def __init__(self, fileinfo):
+class File(ABC):
+    def __init__(self):
         """
-        Initialize a function object. This is extracted from Lizard
+        Initialize a function object.
         """
-        self.filename = fileinfo.filename
-        self.nloc = fileinfo.nloc
-        self.token_count = fileinfo.token_count
-        self.function_list = [Function(x) for x in fileinfo.function_list]
-        self.average_nloc = fileinfo.average_nloc
-        self.average_token_count = fileinfo.average_token_count
-        self.average_cyclomatic_complexity = fileinfo.average_cyclomatic_complexity
-        self.CCN = fileinfo.CCN
-        self.ND = fileinfo.ND
+        self.filename = None
+        self.nloc = None
+        self.token_count = None
+        self.function_list = []
+        self.average_nloc = None
+        self.average_token_count = None
+        self.average_cyclomatic_complexity = None
+        self.CCN = None
+        self.ND = None
 
     def metrics(self):
         return {
@@ -126,55 +128,65 @@ class File:
             "average_token_count": self.average_token_count,
             "average_cyclomatic_complexity": self.average_cyclomatic_complexity,
             "CCN": self.CCN,
-            "ND": self.ND,
-            "function_list": [fun.metrics() for fun in self.function_list]
+            "ND": self.ND
         }
 
 
 class Dependency:
-    """
-    This class defines the (direct?) dependencies of a package,
-    extracted from FASTEN call graph Json file.
-    """
 
-    def __int__(self, cg):
-        self._dep_list = []  # type: List[Package]
+    def __int__(self):
+        pass
 
 
-class Function:
+class Function(ABC):
     """
     This class represents a function in a package. Contains various information,
     extracted through Lizard.
     """
 
-    def __init__(self, func):
+    def __init__(self):
         """
-        Initialize a function object. This is calculated using Lizard
+        Initialize a function object.
         """
-        self.name = func.name
-        self.long_name = func.long_name
-        self.filename = func.filename
-        self.nloc = func.nloc
-        self.complexity = func.cyclomatic_complexity
-        self.token_count = func.token_count
-        self.parameters = func.parameters
-        self.start_line = func.start_line
-        self.end_line = func.end_line
-        self.fan_in = func.fan_in
-        self.fan_out = func.fan_out
-        self.general_fan_out = func.general_fan_out
-        self.length = func.length
-        self.top_nesting_level = func.top_nesting_level
+        self.name = None
+        self.long_name = None
+        self.filename = None
+        self.nloc = None
+        self.complexity = None
+        self.token_count = None
+        self.parameters = None
+        self.start_line = None
+        self.end_line = None
+        self.fan_in = None
+        self.fan_out = None
+        self.general_fan_out = None
+        self.length = None
+        self.top_nesting_level = None
+
+    def metadata(self):
+        return {
+            "filename": self.filename,
+            "name": self.name,
+            "long_name": self.long_name,
+            "start_line": self.start_line,
+            "end_line": self.end_line
+        }
 
     def metrics(self):
-        return self.__dict__
+        return {
+            "metrics": {
+                "nloc": self.nloc,
+                "complexity": self.complexity,
+                "token_count": self.token_count,
+                "parameters": self.parameters,
+                "length": self.length
+            }
+        }
 
     def __eq__(self, other):
         return self.name == other.name and self.parameters == other.parameters
 
     def __hash__(self):
-        # parameters are used in hashing in order to
-        # prevent collisions when overloading method names
         return hash(('name', self.name,
                      'long_name', self.long_name,
                      'params', (x for x in self.parameters)))

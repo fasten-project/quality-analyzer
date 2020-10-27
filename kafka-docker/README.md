@@ -24,7 +24,7 @@ To test putting data into a topic, run the following:
 docker run -i --rm --network=kafka-docker_default \
     edenhill/kafkacat:1.6.0 kafkacat \
     -b kafka:29092 -t fasten.RepoCloner.out -P \
-    < fasten.RepoCloner.out-testdata.txt
+    < rapidplugin/integration_tests/resources/fasten.RepoCloner.out-testdata.txt
 ```
 
 Run the following to verify that the data was inserted:
