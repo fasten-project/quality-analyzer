@@ -60,19 +60,22 @@ class LizardAnalyzer:
         [ ]    2.2 if needed, checkout based on the release date.
         [ ] 3. else return null
         """
+        source_path = None
         if payload['forge'] == "mvn":
             if 'sourcesUrl' in payload:
                 sources_url = payload['sourcesUrl']
-                return MavenUtils.download_jar(sources_url, self.base_dir)
-            else:
-                if 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
-                    repo_path = payload['repoPath']
-                    repo_type = payload['repoType']
-                    commit_tag = payload['commitTag']
-                    return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
+                source_path = MavenUtils.download_jar(sources_url, self.base_dir)
+            elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
+                repo_path = payload['repoPath']
+                repo_type = payload['repoType']
+                commit_tag = payload['commitTag']
+                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
+            assert source_path is not None, \
+                f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
+            return source_path
         else:
             source_path = payload['sourcePath']
-            assert os.path.isabs(source_path), "sourcePath is not an absolute path!"
+            assert os.path.isabs(source_path), "sourcePath: '{}' is not an absolute path!".format(source_path)
             return source_path
 
     def clean_up(self):

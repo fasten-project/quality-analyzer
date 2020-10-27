@@ -15,29 +15,27 @@
 
 from zipfile import ZipFile
 from pathlib import Path
-from git import Repo, GitCommandError
+from git import Repo
+from svn.local import LocalClient
 import requests
-import os
+import subprocess as sp
 
 
 class MavenUtils:
 
-    # TODO:add exception handling
     @staticmethod
     def download_jar(url, base_dir):
-        if url == "":
-            return ""
-        else:
-            base_dir = Path(base_dir)
-            if not base_dir.exists():
-                base_dir.mkdir(parents=True)
-            file_name = base_dir/url.split('/')[-1]
-            tmp_dir = base_dir/"tmp"
-            r = requests.get(url, allow_redirects=True)
-            open(file_name, 'wb').write(r.content)
-            with ZipFile(file_name, 'r') as zipObj:
-                zipObj.extractall(tmp_dir)
-            return tmp_dir
+        assert url != "", "Invalid URL for 'sources.jar'."
+        base_dir = Path(base_dir)
+        if not base_dir.exists():
+            base_dir.mkdir(parents=True)
+        file_name = base_dir/url.split('/')[-1]
+        tmp_dir = base_dir/"tmp"
+        r = requests.get(url, allow_redirects=True)
+        open(file_name, 'wb').write(r.content)
+        with ZipFile(file_name, 'r') as zipObj:
+            zipObj.extractall(tmp_dir)
+        return tmp_dir
 
     @staticmethod
     def checkout_version(repo_path, repo_type, version_tag, base_dir):
@@ -45,23 +43,29 @@ class MavenUtils:
         if not base_dir.exists():
             base_dir.mkdir(parents=True)
         tmp_dir = base_dir/"tmp"
+        assert repo_type in {"git", "svn", "hg"}, "Unknown repo type: '{}'.".format(repo_type)
         if repo_type == "git":
             repo = Repo(repo_path)
             assert repo.tags[version_tag] is not None
             archive_name = version_tag+".zip"
             archive_file_name = tmp_dir/archive_name
-            try:
-                # or use repo.archive()
-                repo.git.archive(version_tag, o=archive_file_name)
-                with ZipFile(archive_file_name, 'r') as zipObj:
-                    zipObj.extractall(tmp_dir)
-                return tmp_dir
-            except GitCommandError:
-                return ""
-        if repo_type == "svn":
-            return ""
-        if repo_type == "hg":
-            return ""
+            repo.git.archive(version_tag, o=archive_file_name)
+            with ZipFile(archive_file_name, 'r') as zipObj:
+                zipObj.extractall(tmp_dir)
+        elif repo_type == "svn":
+            r = LocalClient(repo_path)
+            r.export(tmp_dir, version_tag)
+        elif repo_type == "hg":
+            cmd = [
+                'hg',
+                'archive',
+                '-r', version_tag,
+                '-t', 'files',
+                tmp_dir
+            ]
+            proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+            o, e = proc.communicate()
+        return tmp_dir
 
 
 class KafkaUtils:
