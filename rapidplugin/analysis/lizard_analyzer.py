@@ -69,12 +69,16 @@ class LizardAnalyzer:
                 repo_path = payload['repoPath']
                 repo_type = payload['repoType']
                 commit_tag = payload['commitTag']
-                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
+                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, self.base_dir)
             assert source_path is not None, \
                 f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
             return source_path
         else:
+            assert 'sourcePath' in payload, \
+                f"Cannot get source code for '{payload['product']}:{payload['version']}', missing 'sourcePath'."
             source_path = payload['sourcePath']
+            assert source_path != "", \
+                f"Cannot get source code for '{payload['product']}:{payload['version']}', empty 'sourcePath."
             assert os.path.isabs(source_path), "sourcePath: '{}' is not an absolute path!".format(source_path)
             return source_path
 

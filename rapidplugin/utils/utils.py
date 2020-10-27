@@ -53,18 +53,20 @@ class MavenUtils:
             with ZipFile(archive_file_name, 'r') as zipObj:
                 zipObj.extractall(tmp_dir)
         elif repo_type == "svn":
-            r = LocalClient(repo_path)
-            r.export(tmp_dir, version_tag)
+            return None
+            # r = LocalClient(repo_path)
+            # r.export(tmp_dir, version_tag)
         elif repo_type == "hg":
-            cmd = [
-                'hg',
-                'archive',
-                '-r', version_tag,
-                '-t', 'files',
-                tmp_dir
-            ]
-            proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
-            o, e = proc.communicate()
+            return None
+            # cmd = [
+            #     'hg',
+            #     'archive',
+            #     '-r', version_tag,
+            #     '-t', 'files',
+            #     tmp_dir
+            # ]
+            # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+            # o, e = proc.communicate()
         return tmp_dir
 
 
