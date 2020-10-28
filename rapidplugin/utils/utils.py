@@ -25,11 +25,8 @@ class MavenUtils:
 
     @staticmethod
     def download_jar(url, base_dir):
-        base_dir = Path(base_dir)
-        if not base_dir.exists():
-            base_dir.mkdir(parents=True)
+        tmp_dir = base_dir / "tmp"
         file_name = base_dir/url.split('/')[-1]
-        tmp_dir = base_dir/"tmp"
         r = requests.get(url, allow_redirects=True)
         open(file_name, 'wb').write(r.content)
         with ZipFile(file_name, 'r') as zipObj:
@@ -38,16 +35,13 @@ class MavenUtils:
 
     @staticmethod
     def checkout_version(repo_path, repo_type, version_tag, base_dir):
-        base_dir = Path(base_dir)
-        if not base_dir.exists():
-            base_dir.mkdir(parents=True)
-        tmp_dir = base_dir/"tmp"
+        tmp_dir = base_dir / "tmp"
         assert repo_type in {"git", "svn", "hg"}, "Unknown repo type: '{}'.".format(repo_type)
         assert repo_path != "", "Empty repo_path."
         assert version_tag != "", "Empty version_tag."
         if repo_type == "git":
             repo = Repo(repo_path)
-            assert repo.tags[version_tag] is not None
+            assert repo.tags[version_tag] is not None, "Tag: '{}' does not exist.".format(version_tag)
             archive_name = version_tag+".zip"
             archive_file_name = tmp_dir/archive_name
             repo.git.archive(version_tag, o=archive_file_name)
@@ -101,12 +95,32 @@ class KafkaUtils:
         cha = {
             "cha": {}
         }
+        depset = {
+            "depset": []
+        }
+        build_depset = {
+            "build_depset": []
+        }
+        undeclared_depset = {
+            "undeclared_depset": []
+        }
+        functions = {
+            "functions" :{}
+        }
         if 'graph' in payload:
             payload.update(graph)
         if 'modules' in payload:
             payload.update(modules)
         if 'cha' in payload:
             payload.update(cha)
+        if 'depset' in payload:
+            payload.update(depset)
+        if 'build_depset' in payload:
+            payload.update(build_depset)
+        if 'undeclared_depset' in payload:
+            payload.update(undeclared_depset)
+        if 'functions' in payload:
+            payload.update(functions)
         return payload
 
 
