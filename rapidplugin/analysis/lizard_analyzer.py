@@ -16,6 +16,8 @@
 import os
 import logging
 import datetime
+from pathlib import Path
+
 import lizard
 
 from rapidplugin.domain.package import Package, File, Function
@@ -58,19 +60,22 @@ class LizardAnalyzer:
         [x] 2. else if repoPath is not empty, and
         [x]    2.1 if commit tag is valid, checkout based on tag and return the path
         [ ]    2.2 if needed, checkout based on the release date.
-        [ ] 3. else return null
+        [x] 3. else return None and raise exception (Cannot get source code)
         """
+        base_dir = Path(self.base_dir)
+        if not base_dir.exists():
+            base_dir.mkdir(parents=True)
         source_path = None
         if payload['forge'] == "mvn":
             if 'sourcesUrl' in payload:
                 sources_url = payload['sourcesUrl']
                 if sources_url != "":
-                    source_path = MavenUtils.download_jar(sources_url, self.base_dir)
+                    source_path = MavenUtils.download_jar(sources_url, base_dir)
             elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
                 repo_path = payload['repoPath']
                 repo_type = payload['repoType']
                 commit_tag = payload['commitTag']
-                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, self.base_dir)
+                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
             assert source_path is not None, \
                 f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
             return source_path
@@ -82,13 +87,6 @@ class LizardAnalyzer:
                 f"Cannot get source code for '{payload['product']}:{payload['version']}', empty 'sourcePath."
             assert os.path.isabs(source_path), "sourcePath: '{}' is not an absolute path!".format(source_path)
             return source_path
-
-    def clean_up(self):
-        '''
-        TODO
-        '''
-        # if os.path.exists(self.base_dir):
-        #     shutil.rmtree(self.base_dir)
 
 
 class LizardPackage(Package):
