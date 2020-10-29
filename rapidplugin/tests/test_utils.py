@@ -15,6 +15,8 @@
 
 import os
 import shutil
+from pathlib import Path
+
 import pytest
 from git import Repo
 from rapidplugin.utils.utils import MavenUtils, KafkaUtils
@@ -41,8 +43,8 @@ def repos(tmp_path_factory):
 
 @pytest.mark.parametrize('url', DOWNLOAD_URL_DATA)
 def test_download_jar(url, sources_dir):
-    source_path = MavenUtils.download_jar(url, sources_dir)
-    assert str(source_path) == os.path.join(sources_dir, 'tmp')
+    with MavenUtils.download_jar(url, sources_dir) as source_path:
+        assert os.listdir(Path(source_path)) == ['log4j2.xml', 'META-INF', 'ai', 'libai-1.6.12-sources.jar']
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
 def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
@@ -51,8 +53,9 @@ def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo.git.add(".")
     repo.git.commit(m="first commit.")
     repo.create_tag('1.0.0')
-    source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
-    assert str(source_path) == os.path.join(sources_dir, 'tmp')
+    with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
+        assert os.listdir(Path(source_path)) == ['1.0.0.zip', 'm1.java']
+
 
 PAYLOAD_TAILOR_DATA = [
     ({"product": "a"}, {"product": "a"}),

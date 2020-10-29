@@ -39,8 +39,8 @@ class LizardAnalyzer:
         forge = payload['forge']
         product = payload['groupId'] + ":" + payload['artifactId'] if forge == "mvn" else payload['product']
         version = payload['version']
-        path = self.get_source_path(payload)
-        package = LizardPackage(forge, product, version, path)
+        with self.get_source_path(payload) as path:
+            package = LizardPackage(forge, product, version, str(path))
         metadata = package.metadata()
         for function in package.functions():
             m = {}
@@ -86,6 +86,7 @@ class LizardAnalyzer:
             assert source_path != "", \
                 f"Cannot get source code for '{payload['product']}:{payload['version']}', empty 'sourcePath."
             assert os.path.isabs(source_path), "sourcePath: '{}' is not an absolute path!".format(source_path)
+            source_path = MavenUtils.copy_source(payload['sourcePath'], base_dir)
             return source_path
 
 

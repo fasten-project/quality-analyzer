@@ -19,38 +19,50 @@ from git import Repo
 from svn.local import LocalClient
 import requests
 import subprocess as sp
+from tempfile import TemporaryDirectory
+import os
+import shutil
 
 
 class MavenUtils:
 
     @staticmethod
+    def copy_source(source_path, base_dir):
+        tmp = TemporaryDirectory(dir=base_dir)
+        tmp_path = Path(tmp.name)
+        shutil.copytree(source_path, tmp_path, dirs_exist_ok=True)
+        return tmp
+
+    @staticmethod
     def download_jar(url, base_dir):
-        tmp_dir = base_dir / "tmp"
-        file_name = base_dir/url.split('/')[-1]
+        tmp = TemporaryDirectory(dir=base_dir)
+        tmp_path = Path(tmp.name)
+        file_name = tmp_path/url.split('/')[-1]
         r = requests.get(url, allow_redirects=True)
         open(file_name, 'wb').write(r.content)
         with ZipFile(file_name, 'r') as zipObj:
-            zipObj.extractall(tmp_dir)
-        return tmp_dir
+            zipObj.extractall(tmp_path)
+        return tmp
 
     @staticmethod
     def checkout_version(repo_path, repo_type, version_tag, base_dir):
-        tmp_dir = base_dir / "tmp"
         assert repo_type in {"git", "svn", "hg"}, "Unknown repo type: '{}'.".format(repo_type)
         assert repo_path != "", "Empty repo_path."
         assert version_tag != "", "Empty version_tag."
+        tmp = TemporaryDirectory(dir=base_dir)
+        tmp_path = Path(tmp.name)
         if repo_type == "git":
             repo = Repo(repo_path)
             assert repo.tags[version_tag] is not None, "Tag: '{}' does not exist.".format(version_tag)
             archive_name = version_tag+".zip"
-            archive_file_name = tmp_dir/archive_name
+            archive_file_name = tmp_path/archive_name
             repo.git.archive(version_tag, o=archive_file_name)
             with ZipFile(archive_file_name, 'r') as zipObj:
-                zipObj.extractall(tmp_dir)
+                zipObj.extractall(tmp_path)
         elif repo_type == "svn":
             return None
             # r = LocalClient(repo_path)
-            # r.export(tmp_dir, version_tag)
+            # r.export(tmp, version_tag)
         elif repo_type == "hg":
             return None
             # cmd = [
@@ -58,11 +70,11 @@ class MavenUtils:
             #     'archive',
             #     '-r', version_tag,
             #     '-t', 'files',
-            #     tmp_dir
+            #     tmp
             # ]
             # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
             # o, e = proc.communicate()
-        return tmp_dir
+        return tmp
 
 
 class KafkaUtils:
