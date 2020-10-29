@@ -39,8 +39,20 @@ class RapidPlugin(KafkaPluginNonBlocking):
         self.group_id = self.plugin_config.get_config_value('group_id')
         self.sources_dir = self.plugin_config.get_config_value('sources_dir')
         self.consumer_timeout_ms = self.plugin_config.get_config_value('consumer_timeout_ms')
-        self.set_consumer()
-        self.set_producer()
+        self.consumption_delay_sec = self.plugin_config.get_config_value('consumption_delay_sec')
+        self.connect_to_kafka()
+
+    def connect_to_kafka(self):
+        while True:
+            try:
+                self.set_consumer()
+                self.set_producer()
+            except Exception as e:
+                self.err("Could not connect to Kafka, re-trying...")
+            else:
+                self.log("Connected to Kafka successfully.")
+                break
+            sleep(self.consumption_delay_sec)
 
     def name(self):
         return self._name
@@ -53,17 +65,16 @@ class RapidPlugin(KafkaPluginNonBlocking):
 
     def run_forever(self):
         self.announce_activation()
-        sleep_time = self.plugin_config.get_config_value('consumption_delay_sec')
         try:
             while True:
-                self.announce_heartbeat()
+                # self.announce_heartbeat()
                 self.flush_logs()
-                sleep(sleep_time)
-            try:
-                self.consume_messages()
-            except BaseException as e:
-                self.handle_failure({}, 'Fatal exception while consuming.', e)
-                raise e
+                sleep(self.consumption_delay_sec)
+                try:
+                    self.consume_messages()
+                except BaseException as e:
+                    self.handle_failure({}, 'Fatal exception while consuming.', e)
+                    raise e
         finally:
             self.announce_termination()
             self.free_resource()

@@ -35,9 +35,17 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+  rapidplugin:
+    image: rapidplugin-test
+    entrypoint: ['python', '/home/plugin/entrypoint.py', '--group_id=RapidPlugin-TEST', '--bootstrap_servers=kafka:29092', '--sources_dir=/home/plugin/rapidplugin/tests/resources']
+
   wait-for-kafka:
     image: waisbrot/wait
     links:
       - kafka
     environment:
       - TARGETS=kafka:29092
+
+networks:
+  default:
+    name: rapidplugin-test

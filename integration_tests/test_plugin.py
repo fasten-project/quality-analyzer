@@ -14,82 +14,58 @@
 #
 
 import pytest
-import entrypoint as entrypoint
+from time import sleep
 from integration_tests.mocks import MockConsumer
 from integration_tests.mocks import MockProducer
-from rapidplugin.rapid_plugin import RapidPlugin
-from rapidplugin.tests.sources import sources
 from rapidplugin.tests.sources import fix_sourcePath
 
 
-@pytest.fixture(scope='session')
-def config(sources):
-    parser = entrypoint.get_args_parser()
-    config = entrypoint.get_config(parser.parse_args([]))
-    config.update_config_value('sources_dir', str(sources))
-    config.update_config_value('bootstrap_servers', 'localhost:9092')
-    config.update_config_value('group_id', 'RapidPlugin-TEST')
-    config.update_config_value('consumer_timeout_ms', 500)
-    yield config
-
-
 @pytest.fixture()
-def plugin(config):
-    plugin = RapidPlugin('RapidPlugin', 'TEST', 'TEST', config)
-    plugin.skip_messages()
-    yield plugin
-    plugin.free_resource()
-
-
-@pytest.fixture()
-def mock_in(config):
-    mock = MockProducer(config.get_config_value('bootstrap_servers'),
-                        config.get_config_value('consume_topic'))
+def mock_in():
+    mock = MockProducer('localhost:9092',
+                        'fasten.RepoCloner.out')
     yield mock
     mock.free_resource()
 
 
 @pytest.fixture()
-def mock_out(config):
+def mock_out():
     mock = MockConsumer('MockConsumerOut',
-                        config.get_config_value('bootstrap_servers'),
-                        config.get_config_value('produce_topic'),
-                        config.get_config_value('consumer_timeout_ms'))
+                        'localhost:9092',
+                        'fasten.RapidPlugin.callable.out')
     mock.skip_messages()
     yield mock
     mock.free_resource()
 
 
 @pytest.fixture()
-def mock_log(config):
+def mock_log():
     mock = MockConsumer('MockConsumerLog',
-                        config.get_config_value('bootstrap_servers'),
-                        config.get_config_value('log_topic'),
-                        config.get_config_value('consumer_timeout_ms'))
+                        'localhost:9092',
+                        'fasten.RapidPlugin.callable.log')
     mock.skip_messages()
     yield mock
     mock.free_resource()
 
 
 @pytest.fixture()
-def mock_err(config):
+def mock_err():
     mock = MockConsumer('MockConsumerErr',
-                        config.get_config_value('bootstrap_servers'),
-                        config.get_config_value('err_topic'),
-                        config.get_config_value('consumer_timeout_ms'))
+                        'localhost:9092',
+                        'fasten.RapidPlugin.callable.err')
     mock.skip_messages()
     yield mock
     mock.free_resource()
 
 
 @pytest.fixture()
-def plugin_run(plugin, config, mock_in, mock_out, mock_log, mock_err,
+def plugin_run(mock_in, mock_out, mock_log, mock_err,
                in_message):
     fixed_in_message = fix_sourcePath(in_message,
-                                      config.get_config_value('sources_dir'))
+                                      '/home/plugin/rapidplugin/tests/resources')
     mock_in.emit_message(mock_in.produce_topic, fixed_in_message,
                          "[TEST]", fixed_in_message)
-    plugin.consume_messages()
+    sleep(2)
     mock_out.consume_messages()
     mock_log.consume_messages()
     mock_err.consume_messages()
