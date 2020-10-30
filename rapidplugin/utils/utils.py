@@ -29,7 +29,6 @@ class MavenUtils:
     @staticmethod
     def get_source_path(payload, base_dir):
         """
-        TODO: consider moving this to a utility class.
         For maven, the order to get source code path from different sources:
         [x] 1. if *-sources.jar is valid, download,
                uncompress and return the path to the source code
@@ -49,6 +48,7 @@ class MavenUtils:
 
     @staticmethod
     def get_source_mvn(payload, base_dir):
+        source_path = None
         if 'sourcesUrl' in payload:
             sources_url = payload['sourcesUrl']
             if sources_url != "":
@@ -101,9 +101,9 @@ class MavenUtils:
         if repo_type == "git":
             MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "svn":
-            return MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
+            MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "hg":
-            return MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
+            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
         return tmp
 
     @staticmethod
@@ -118,13 +118,15 @@ class MavenUtils:
 
     @staticmethod
     def svn_checkout(repo_path, version_tag, tmp_path):
-        return None
+        repo_type = "svn"
+        raise Exception('Unsupported repo_type:{}.'.format(repo_type))
         # r = LocalClient(repo_path)
         # r.export(tmp_path, version_tag)
 
     @staticmethod
     def hg_checkout(repo_path, version_tag, tmp_path):
-        return None
+        repo_type = "hg"
+        raise Exception('Unsupported repo_type:{}.'.format(repo_type))
         # cmd = [
         #     'hg',
         #     'archive',
@@ -134,6 +136,7 @@ class MavenUtils:
         # ]
         # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
         # o, e = proc.communicate()
+
 
 class KafkaUtils:
     @staticmethod
