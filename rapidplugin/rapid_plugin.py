@@ -40,19 +40,8 @@ class RapidPlugin(KafkaPluginNonBlocking):
         self.sources_dir = self.plugin_config.get_config_value('sources_dir')
         self.consumer_timeout_ms = self.plugin_config.get_config_value('consumer_timeout_ms')
         self.consumption_delay_sec = self.plugin_config.get_config_value('consumption_delay_sec')
-        self.connect_to_kafka()
-
-    def connect_to_kafka(self):
-        while True:
-            try:
-                self.set_consumer()
-                self.set_producer()
-            except Exception as e:
-                self.err("Could not connect to Kafka, re-trying...")
-            else:
-                self.log("Connected to Kafka successfully.")
-                break
-            sleep(self.consumption_delay_sec)
+        self.set_consumer_with_retry()
+        self.set_producer_with_retry()
 
     def name(self):
         return self._name
