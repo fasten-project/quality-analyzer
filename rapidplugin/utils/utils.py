@@ -103,7 +103,7 @@ class MavenUtils:
         elif repo_type == "svn":
             MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "hg":
-            MavenUtils.hg_checkout()
+            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
         return tmp
 
     @staticmethod
