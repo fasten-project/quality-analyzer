@@ -101,9 +101,9 @@ class MavenUtils:
         if repo_type == "git":
             MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "svn":
-            MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
+            return MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "hg":
-            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
+            return MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
         return tmp
 
     @staticmethod
@@ -120,7 +120,7 @@ class MavenUtils:
     def svn_checkout(repo_path, version_tag, tmp_path):
         return None
         # r = LocalClient(repo_path)
-        # r.export(tmp, version_tag)
+        # r.export(tmp_path, version_tag)
 
     @staticmethod
     def hg_checkout(repo_path, version_tag, tmp_path):
@@ -130,7 +130,7 @@ class MavenUtils:
         #     'archive',
         #     '-r', version_tag,
         #     '-t', 'files',
-        #     tmp
+        #     tmp_path
         # ]
         # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
         # o, e = proc.communicate()
