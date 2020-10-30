@@ -16,6 +16,8 @@
 import os
 import logging
 import datetime
+from pathlib import Path
+
 import lizard
 
 from rapidplugin.domain.package import Package, File, Function
@@ -37,8 +39,8 @@ class LizardAnalyzer:
         forge = payload['forge']
         product = payload['groupId'] + ":" + payload['artifactId'] if forge == "mvn" else payload['product']
         version = payload['version']
-        path = self.get_source_path(payload)
-        package = LizardPackage(forge, product, version, path)
+        with MavenUtils.get_source_path(payload, self.base_dir) as path:
+            package = LizardPackage(forge, product, version, str(path))
         metadata = package.metadata()
         for function in package.functions():
             m = {}
@@ -48,39 +50,6 @@ class LizardAnalyzer:
             out_payloads.append(m)
             logger.debug("callable: {}".format(m) + '\n')
         return out_payloads
-
-    def get_source_path(self, payload):
-        """
-        TODO: consider moving this to a utility class.
-        For maven, the order to get source code path from different sources:
-        [x] 1. if *-sources.jar is valid, download,
-               uncompress and return the path to the source code
-        [x] 2. else if repoPath is not empty, and
-        [x]    2.1 if commit tag is valid, checkout based on tag and return the path
-        [ ]    2.2 if needed, checkout based on the release date.
-        [ ] 3. else return null
-        """
-        if payload['forge'] == "mvn":
-            if 'sourcesUrl' in payload:
-                sources_url = payload['sourcesUrl']
-                return MavenUtils.download_jar(sources_url, self.base_dir)
-            else:
-                if 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
-                    repo_path = payload['repoPath']
-                    repo_type = payload['repoType']
-                    commit_tag = payload['commitTag']
-                    return MavenUtils.checkout_version(repo_path, repo_type, commit_tag)
-        else:
-            source_path = payload['sourcePath']
-            assert os.path.isabs(source_path), "sourcePath is not an absolute path!"
-            return source_path
-
-    def clean_up(self):
-        '''
-        TODO
-        '''
-        # if os.path.exists(self.base_dir):
-        #     shutil.rmtree(self.base_dir)
 
 
 class LizardPackage(Package):

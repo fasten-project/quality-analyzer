@@ -25,6 +25,7 @@ setup(
         'fasten',
         'lizard',
         'requests',
-        'gitpython'
+        'gitpython',
+        'svn'
     ]
 )
