@@ -27,6 +27,53 @@ import shutil
 class MavenUtils:
 
     @staticmethod
+    def get_source_path(payload, base_dir):
+        """
+        TODO: consider moving this to a utility class.
+        For maven, the order to get source code path from different sources:
+        [x] 1. if *-sources.jar is valid, download,
+               uncompress and return the path to the source code
+        [x] 2. else if repoPath is not empty, and
+        [x]    2.1 if commit tag is valid, checkout based on tag and return the path
+        [ ]    2.2 if needed, checkout based on the release date.
+        [x] 3. else return None and raise exception (Cannot get source code)
+        """
+        base_dir = Path(base_dir)
+        if not base_dir.exists():
+            base_dir.mkdir(parents=True)
+        if payload['forge'] == "mvn":
+            source_path = MavenUtils.get_source_mvn(payload, base_dir)
+        else:
+            source_path = MavenUtils.get_source_other(payload, base_dir)
+        return source_path
+
+    @staticmethod
+    def get_source_mvn(payload, base_dir):
+        if 'sourcesUrl' in payload:
+            sources_url = payload['sourcesUrl']
+            if sources_url != "":
+                source_path = MavenUtils.download_jar(sources_url, base_dir)
+        elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
+            repo_path = payload['repoPath']
+            repo_type = payload['repoType']
+            commit_tag = payload['commitTag']
+            source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
+        assert source_path is not None, \
+            f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
+        return source_path
+
+    @staticmethod
+    def get_source_other(payload, base_dir):
+        assert 'sourcePath' in payload, \
+            f"Cannot get source code for '{payload['product']}:{payload['version']}', missing 'sourcePath'."
+        source_path = payload['sourcePath']
+        assert source_path != "", \
+            f"Cannot get source code for '{payload['product']}:{payload['version']}', empty 'sourcePath."
+        assert os.path.isabs(source_path), "sourcePath: '{}' is not an absolute path!".format(source_path)
+        source_path = MavenUtils.copy_source(payload['sourcePath'], base_dir)
+        return source_path
+
+    @staticmethod
     def copy_source(source_path, base_dir):
         tmp = TemporaryDirectory(dir=base_dir)
         tmp_path = Path(tmp.name)
@@ -52,30 +99,41 @@ class MavenUtils:
         tmp = TemporaryDirectory(dir=base_dir)
         tmp_path = Path(tmp.name)
         if repo_type == "git":
-            repo = Repo(repo_path)
-            assert repo.tags[version_tag] is not None, "Tag: '{}' does not exist.".format(version_tag)
-            archive_name = version_tag+".zip"
-            archive_file_name = tmp_path/archive_name
-            repo.git.archive(version_tag, o=archive_file_name)
-            with ZipFile(archive_file_name, 'r') as zipObj:
-                zipObj.extractall(tmp_path)
+            MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "svn":
-            return None
-            # r = LocalClient(repo_path)
-            # r.export(tmp, version_tag)
+            MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "hg":
-            return None
-            # cmd = [
-            #     'hg',
-            #     'archive',
-            #     '-r', version_tag,
-            #     '-t', 'files',
-            #     tmp
-            # ]
-            # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
-            # o, e = proc.communicate()
+            MavenUtils.hg_checkout()
         return tmp
 
+    @staticmethod
+    def git_checkout(repo_path, version_tag, tmp_path):
+        repo = Repo(repo_path)
+        assert repo.tags[version_tag] is not None, "Tag: '{}' does not exist.".format(version_tag)
+        archive_name = version_tag+".zip"
+        archive_file_name = tmp_path/archive_name
+        repo.git.archive(version_tag, o=archive_file_name)
+        with ZipFile(archive_file_name, 'r') as zipObj:
+            zipObj.extractall(tmp_path)
+
+    @staticmethod
+    def svn_checkout(repo_path, version_tag, tmp_path):
+        return None
+        # r = LocalClient(repo_path)
+        # r.export(tmp, version_tag)
+
+    @staticmethod
+    def hg_checkout(repo_path, version_tag, tmp_path):
+        return None
+        # cmd = [
+        #     'hg',
+        #     'archive',
+        #     '-r', version_tag,
+        #     '-t', 'files',
+        #     tmp
+        # ]
+        # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+        # o, e = proc.communicate()
 
 class KafkaUtils:
     @staticmethod
@@ -98,41 +156,18 @@ class KafkaUtils:
         to avoid (big) call graph data
         adding to 'input' field in the produced topics.
         """
-        graph = {
-            "graph": {}
+        tailor = {
+            "graph": {},
+            "modules": {},
+            "cha": {},
+            "depset": [],
+            "build_depset": [],
+            "undeclared_depset": [],
+            "functions": {}
         }
-        modules = {
-            "modules": {}
-        }
-        cha = {
-            "cha": {}
-        }
-        depset = {
-            "depset": []
-        }
-        build_depset = {
-            "build_depset": []
-        }
-        undeclared_depset = {
-            "undeclared_depset": []
-        }
-        functions = {
-            "functions" :{}
-        }
-        if 'graph' in payload:
-            payload.update(graph)
-        if 'modules' in payload:
-            payload.update(modules)
-        if 'cha' in payload:
-            payload.update(cha)
-        if 'depset' in payload:
-            payload.update(depset)
-        if 'build_depset' in payload:
-            payload.update(build_depset)
-        if 'undeclared_depset' in payload:
-            payload.update(undeclared_depset)
-        if 'functions' in payload:
-            payload.update(functions)
+        for key in tailor.keys():
+            if key in payload:
+                payload[key] = tailor[key]
         return payload
 
 
