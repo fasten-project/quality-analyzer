@@ -47,7 +47,7 @@ def test_download_jar(url, sources_dir):
         assert sorted(os.listdir(Path(source_path))) == sorted(['log4j2.xml', 'META-INF', 'ai', 'libai-1.6.12-sources.jar'])
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
-def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
+def test_checkout_success(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
     repo = Repo.init(repo_path)
     repo.git.add(".")
@@ -55,6 +55,12 @@ def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo.create_tag('1.0.0')
     with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
         assert sorted(os.listdir(Path(source_path))) == sorted(['1.0.0.zip', 'm1.java'])
+
+@pytest.mark.parametrize('repo_path,repo_type,commit_tag',
+                         [("maven/svn/m2", "svn", "1.0.0"),("maven/hg/m3", "hg", "1.0.0")])
+def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir):
+    with pytest.raises(Exception):
+        MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
 
 
 PAYLOAD_TAILOR_DATA = [
