@@ -42,9 +42,14 @@ def repos(tmp_path_factory):
     yield tmp
 
 @pytest.mark.parametrize('url', DOWNLOAD_URL_DATA)
-def test_download_jar(url, sources_dir):
+def test_download_success(url, sources_dir):
     with MavenUtils.download_jar(url, sources_dir) as source_path:
         assert sorted(os.listdir(Path(source_path))) == sorted(['log4j2.xml', 'META-INF', 'ai', 'libai-1.6.12-sources.jar'])
+
+@pytest.mark.parametrize('url', ["http://abc.com/def.jar"])
+def test_download_fail(url, sources_dir):
+    with pytest.raises(Exception):
+        MavenUtils.download_jar(url, sources_dir)
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
 def test_checkout_success(repo_path, repo_type, commit_tag, sources_dir, repos):
