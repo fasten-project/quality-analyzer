@@ -52,7 +52,7 @@ def test_download_fail(url, sources_dir):
         MavenUtils.download_jar(url, sources_dir)
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
-def test_checkout_success(repo_path, repo_type, commit_tag, sources_dir, repos):
+def test_checkout_git(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
     repo = Repo.init(repo_path)
     repo.git.add(".")
@@ -61,8 +61,14 @@ def test_checkout_success(repo_path, repo_type, commit_tag, sources_dir, repos):
     with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
         assert sorted(os.listdir(Path(source_path))) == sorted(['1.0.0.zip', 'm1.java'])
 
+@pytest.mark.parametrize('repo_path,repo_type,commit_tag', [("maven/hg/m3", "hg", "1.0.0")])
+def test_checkout_hg(repo_path, repo_type, commit_tag, sources_dir, repos):
+    repo_path = os.path.join(repos, repo_path)
+    with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
+        assert sorted(os.listdir(source_path)) == sorted(['m3.java', '.hg_archival.txt'])
+
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag',
-                         [("maven/svn/m2", "svn", "1.0.0"),("maven/hg/m3", "hg", "1.0.0")])
+                         [("maven/git/m1", "git", "1.0.1"),("maven/hg/m3", "hg", "1.0.1")])
 def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir):
     with pytest.raises(Exception):
         MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)

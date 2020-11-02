@@ -44,6 +44,8 @@ class MavenUtils:
             source_path = MavenUtils.get_source_mvn(payload, base_dir)
         else:
             source_path = MavenUtils.get_source_other(payload, base_dir)
+        assert source_path is not None, \
+                f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
         return source_path
 
     @staticmethod
@@ -58,8 +60,8 @@ class MavenUtils:
             repo_type = payload['repoType']
             commit_tag = payload['commitTag']
             source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
-        assert source_path is not None, \
-            f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
+        # assert source_path is not None, \
+        #     f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
         return source_path
 
     @staticmethod
@@ -98,12 +100,15 @@ class MavenUtils:
         assert version_tag != "", "Empty version_tag."
         tmp = TemporaryDirectory(dir=base_dir)
         tmp_path = Path(tmp.name)
-        if repo_type == "git":
-            MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
-        elif repo_type == "svn":
-            MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
-        elif repo_type == "hg":
-            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
+        try:
+            if repo_type == "git":
+                MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
+            elif repo_type == "svn":
+                MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
+            elif repo_type == "hg":
+                MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
+        except Exception as e:
+            raise e
         return tmp
 
     @staticmethod
@@ -118,25 +123,26 @@ class MavenUtils:
 
     @staticmethod
     def svn_checkout(repo_path, version_tag, tmp_path):
-        repo_type = "svn"
-        raise Exception('Unsupported repo_type:{}.'.format(repo_type))
+        raise NotImplemented
         # r = LocalClient(repo_path)
         # r.export(tmp_path, version_tag)
 
     @staticmethod
     def hg_checkout(repo_path, version_tag, tmp_path):
-        repo_type = "hg"
-        raise Exception('Unsupported repo_type:{}.'.format(repo_type))
-        # cmd = [
-        #     'hg',
-        #     'archive',
-        #     '-r', version_tag,
-        #     '-t', 'files',
-        #     tmp_path
-        # ]
-        # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
-        # o, e = proc.communicate()
-
+        os.chdir(repo_path)
+        print(os.listdir(repo_path))
+        cmd = [
+            'hg',
+            'archive',
+            '-r', version_tag,
+            '-t', 'files',
+            tmp_path
+        ]
+        try:
+            proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+            out, err = proc.communicate()
+        except Exception as e:
+            raise e("Check out error")
 
 class KafkaUtils:
     @staticmethod
