@@ -122,6 +122,7 @@ class MavenUtils:
 
     @staticmethod
     def hg_checkout(repo_path, version_tag, tmp_path):
+        wd = os.getcwd()
         os.chdir(repo_path)
         cmd = [
             'hg',
@@ -132,6 +133,7 @@ class MavenUtils:
         ]
         proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
         out, err = proc.communicate()
+        os.chdir(wd)
 
 class KafkaUtils:
     @staticmethod

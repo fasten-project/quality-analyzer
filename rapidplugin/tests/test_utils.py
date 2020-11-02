@@ -21,6 +21,7 @@ import pytest
 from git import Repo
 from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 
+
 DOWNLOAD_URL_DATA = [
     ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar")
 ]
@@ -32,14 +33,15 @@ REPO_PATH_DATA = [
 ]
 
 @pytest.fixture(scope='session')
-def sources_dir(tmp_path_factory):
-    yield tmp_path_factory.mktemp("sources")
-
-@pytest.fixture(scope='session')
 def repos(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("repos")
+    print(f"cwd: {os.getcwd()}")
     shutil.copytree('rapidplugin/tests/resources', tmp, dirs_exist_ok=True)
     yield tmp
+
+@pytest.fixture(scope='session')
+def sources_dir(tmp_path_factory):
+    yield tmp_path_factory.mktemp("sources")
 
 @pytest.mark.parametrize('url', DOWNLOAD_URL_DATA)
 def test_download_success(url, sources_dir):

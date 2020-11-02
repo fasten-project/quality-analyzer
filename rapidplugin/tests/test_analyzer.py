@@ -61,7 +61,7 @@ mvn_message_with_hg_repo = {
     "artifactId": "m3",
     "version": "1.0.0",
     "sourcesUrl": "",
-    "repoPath": "maven/hg/m3",
+    "repoPath": "rapidplugin/tests/resources/maven/hg/m3",
     "repoType": "hg",
     "commitTag": "1.0.0"
 }
@@ -89,14 +89,14 @@ FUNCTION_COUNT_DATA = [
 
 # List of (payload, start_line, end_line) tuples
 FUNCTION_LINE_DATA = [
-    (mvn_message_with_hg_repo, 2, 4),
+    # (mvn_message_with_hg_repo, 2, 4),
     (debian_message, 3, 3),
     (pypi_message, 1, 2)
 ]
 
 # List of (payload, nloc, complexity, token_count) tuples
 FUNCTION_METRICS_DATA = [
-    # (mvn_message_with_repo, 3, 1, 18),
+    # (mvn_message_with_hg_repo, 3, 1, 18),
     (debian_message, 1, 1, 5),
     (pypi_message, 2, 1, 5)
 ]
