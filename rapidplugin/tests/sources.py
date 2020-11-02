@@ -14,4 +14,9 @@ def fix_sourcePath(record, tmp_sources_path):
     if "sourcePath" in record:
         sourcePath = record["sourcePath"]
         record.update({"sourcePath": os.path.join(tmp_sources_path, sourcePath)})
+    if "repoPath" in record:
+        repoPath = record["repoPath"]
+        record.update({"repoPath": os.path.join(tmp_sources_path, repoPath)})
     return record
+
+

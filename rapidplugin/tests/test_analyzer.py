@@ -81,13 +81,15 @@ pypi_message = {
 # List of (payload, function_count) pairs
 FUNCTION_COUNT_DATA = [
     (mvn_libai_1_6_12, 411),
+    # (mvn_message_with_git_repo, 1),
+    (mvn_message_with_hg_repo, 1),
     (debian_message, 1),
     (pypi_message, 1)
 ]
 
 # List of (payload, start_line, end_line) tuples
 FUNCTION_LINE_DATA = [
-    # (mvn_message_with_repo, 2, 4),
+    (mvn_message_with_hg_repo, 2, 4),
     (debian_message, 3, 3),
     (pypi_message, 1, 2)
 ]

@@ -44,25 +44,20 @@ class MavenUtils:
             source_path = MavenUtils.get_source_mvn(payload, base_dir)
         else:
             source_path = MavenUtils.get_source_other(payload, base_dir)
-        assert source_path is not None, \
-                f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
         return source_path
 
     @staticmethod
     def get_source_mvn(payload, base_dir):
-        source_path = None
         if 'sourcesUrl' in payload:
             sources_url = payload['sourcesUrl']
             if sources_url != "":
-                source_path = MavenUtils.download_jar(sources_url, base_dir)
-        elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
-            repo_path = payload['repoPath']
-            repo_type = payload['repoType']
-            commit_tag = payload['commitTag']
-            source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
-        # assert source_path is not None, \
-        #     f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
-        return source_path
+                return MavenUtils.download_jar(sources_url, base_dir)
+            elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
+                repo_path = payload['repoPath']
+                repo_type = payload['repoType']
+                commit_tag = payload['commitTag']
+                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
+                return source_path
 
     @staticmethod
     def get_source_other(payload, base_dir):
@@ -100,15 +95,12 @@ class MavenUtils:
         assert version_tag != "", "Empty version_tag."
         tmp = TemporaryDirectory(dir=base_dir)
         tmp_path = Path(tmp.name)
-        try:
-            if repo_type == "git":
-                MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
-            elif repo_type == "svn":
-                MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
-            elif repo_type == "hg":
-                MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
-        except Exception as e:
-            raise e
+        if repo_type == "git":
+            MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
+        elif repo_type == "svn":
+            MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
+        elif repo_type == "hg":
+            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
         return tmp
 
     @staticmethod
@@ -123,14 +115,14 @@ class MavenUtils:
 
     @staticmethod
     def svn_checkout(repo_path, version_tag, tmp_path):
-        raise NotImplemented
+        raise NotImplementedError
+        # 'svn export' does not support tag
         # r = LocalClient(repo_path)
         # r.export(tmp_path, version_tag)
 
     @staticmethod
     def hg_checkout(repo_path, version_tag, tmp_path):
         os.chdir(repo_path)
-        print(os.listdir(repo_path))
         cmd = [
             'hg',
             'archive',
@@ -138,11 +130,8 @@ class MavenUtils:
             '-t', 'files',
             tmp_path
         ]
-        try:
-            proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
-            out, err = proc.communicate()
-        except Exception as e:
-            raise e("Check out error")
+        proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+        out, err = proc.communicate()
 
 class KafkaUtils:
     @staticmethod
