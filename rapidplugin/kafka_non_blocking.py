@@ -15,7 +15,9 @@
 
 
 import json
+from time import sleep
 from kafka import KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 from fasten.plugins.kafka import KafkaPlugin
 
 
@@ -45,6 +47,29 @@ class KafkaPluginNonBlocking(KafkaPlugin):
             value_deserializer=lambda x: json.loads(x.decode('utf-8')),
             consumer_timeout_ms=self.consumer_timeout_ms
         )
+
+    def set_consumer_with_retry(self):
+        while True:
+            try:
+                self.set_consumer()
+                self.set_producer()
+            except NoBrokersAvailable:
+                self.err("Could not connect consumer to Kafka, re-trying...")
+            else:
+                self.log("Connected consumer to Kafka successfully.")
+                break
+            sleep(self.consumption_delay_sec)
+
+    def set_producer_with_retry(self):
+        while True:
+            try:
+                self.set_producer()
+            except NoBrokersAvailable:
+                self.err("Could not connect producer to Kafka, re-trying...")
+            else:
+                self.log("Connected producer to Kafka successfully.")
+                break
+            sleep(self.consumption_delay_sec)
 
     def skip_messages(self):
         assert self.consumer is not None, "Consumer needs to be set before messages can ben consumed."
