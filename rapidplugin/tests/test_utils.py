@@ -70,12 +70,13 @@ def test_checkout_hg(repo_path, repo_type, commit_tag, sources_dir, repos):
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag',
                          [("maven/git/m1", "git", "1.0.1"),
-                          ("rapidplugin/tests/resources/maven/hg/m3", "hg", "1.0.1"),
+                          ("maven/hg/m3", "hg", "1.0.1"),
                           ("maven/svn/m2", "svn", "1.0.0")])
-def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir):
+def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir, repos):
+    repo_path = os.path.join(repos, repo_path)
     with pytest.raises(Exception) as e:
         MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
-
+    print(str(e)+"\n")
 
 PAYLOAD_TAILOR_DATA = [
     ({"product": "a"}, {"product": "a"}),

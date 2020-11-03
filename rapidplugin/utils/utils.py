@@ -106,7 +106,7 @@ class MavenUtils:
     @staticmethod
     def git_checkout(repo_path, version_tag, tmp_path):
         repo = Repo(repo_path)
-        assert repo.tags[version_tag] is not None, "Tag: '{}' does not exist.".format(version_tag)
+        # assert repo.tag(version_tag) is None, "Tag: '{}' does not exist.".format(version_tag)
         archive_name = version_tag+".zip"
         archive_file_name = tmp_path/archive_name
         repo.git.archive(version_tag, o=archive_file_name)
@@ -132,13 +132,14 @@ class MavenUtils:
             tmp_path
         ]
         try:
-            proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
-            out, err = proc.communicate()
+            proc_hg = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+            out, err = proc_hg.communicate()
         except Exception as e:
             raise e
         else:
-            if proc.returncode != 0:
-                raise Exception(str(err))
+            if proc_hg.returncode:
+                err_str = f"Cannot check out '{version_tag}' from repo '{repo_path}', [Error]" + str(err)
+                raise Exception(err_str)
         finally:
             os.chdir(wd)
 
