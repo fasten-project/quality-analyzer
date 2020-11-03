@@ -35,7 +35,6 @@ REPO_PATH_DATA = [
 @pytest.fixture(scope='session')
 def repos(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("repos")
-    print(f"cwd: {os.getcwd()}")
     shutil.copytree('rapidplugin/tests/resources', tmp, dirs_exist_ok=True)
     yield tmp
 
@@ -70,9 +69,11 @@ def test_checkout_hg(repo_path, repo_type, commit_tag, sources_dir, repos):
         assert sorted(os.listdir(source_path)) == sorted(['m3.java', '.hg_archival.txt'])
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag',
-                         [("maven/git/m1", "git", "1.0.1"),("maven/hg/m3", "hg", "1.0.1")])
+                         [("maven/git/m1", "git", "1.0.1"),
+                          ("rapidplugin/tests/resources/maven/hg/m3", "hg", "1.0.1"),
+                          ("maven/svn/m2", "svn", "1.0.0")])
 def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir):
-    with pytest.raises(Exception):
+    with pytest.raises(Exception) as e:
         MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
 
 

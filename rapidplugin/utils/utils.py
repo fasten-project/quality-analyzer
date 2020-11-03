@@ -115,7 +115,7 @@ class MavenUtils:
 
     @staticmethod
     def svn_checkout(repo_path, version_tag, tmp_path):
-        raise NotImplementedError
+        raise NotImplementedError("Svn repo not supported.")
         # 'svn export' does not support tag
         # r = LocalClient(repo_path)
         # r.export(tmp_path, version_tag)
@@ -134,6 +134,8 @@ class MavenUtils:
         proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
         out, err = proc.communicate()
         os.chdir(wd)
+        if proc.returncode !=0:
+            raise Exception(str(err))
 
 class KafkaUtils:
     @staticmethod
