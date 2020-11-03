@@ -41,6 +41,10 @@ jobs:
       run: |
         docker build -t rapidplugin-test .
 
+    - name: Run unit tests
+      run: |
+        docker run --entrypoint python rapidplugin-test -m pytest rapidplugin/tests
+
     - name: Setup integration environment
       run: |
         docker-compose -f integration_tests/kafka-compose.yml up -d

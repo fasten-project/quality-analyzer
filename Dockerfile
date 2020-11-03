@@ -28,6 +28,4 @@ COPY --chown=plugin README.md .
 
 RUN python -m pip install -r requirements.txt
 
-RUN python -m pytest rapidplugin/tests
-
 ENTRYPOINT ["python", "/home/plugin/entrypoint.py"]
