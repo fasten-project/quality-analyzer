@@ -21,6 +21,7 @@ import pytest
 from git import Repo
 from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 
+
 DOWNLOAD_URL_DATA = [
     ("https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar")
 ]
@@ -32,22 +33,27 @@ REPO_PATH_DATA = [
 ]
 
 @pytest.fixture(scope='session')
-def sources_dir(tmp_path_factory):
-    yield tmp_path_factory.mktemp("sources")
-
-@pytest.fixture(scope='session')
 def repos(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("repos")
     shutil.copytree('rapidplugin/tests/resources', tmp, dirs_exist_ok=True)
     yield tmp
 
+@pytest.fixture(scope='session')
+def sources_dir(tmp_path_factory):
+    yield tmp_path_factory.mktemp("sources")
+
 @pytest.mark.parametrize('url', DOWNLOAD_URL_DATA)
-def test_download_jar(url, sources_dir):
+def test_download_success(url, sources_dir):
     with MavenUtils.download_jar(url, sources_dir) as source_path:
         assert sorted(os.listdir(Path(source_path))) == sorted(['log4j2.xml', 'META-INF', 'ai', 'libai-1.6.12-sources.jar'])
 
+@pytest.mark.parametrize('url', ["http://abc.com/def.jar"])
+def test_download_fail(url, sources_dir):
+    with pytest.raises(Exception):
+        MavenUtils.download_jar(url, sources_dir)
+
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', REPO_PATH_DATA)
-def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
+def test_checkout_git(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
     repo = Repo.init(repo_path)
     repo.git.add(".")
@@ -56,6 +62,20 @@ def test_checkout_version(repo_path, repo_type, commit_tag, sources_dir, repos):
     with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
         assert sorted(os.listdir(Path(source_path))) == sorted(['1.0.0.zip', 'm1.java'])
 
+@pytest.mark.parametrize('repo_path,repo_type,commit_tag', [("maven/hg/m3", "hg", "1.0.0")])
+def test_checkout_hg(repo_path, repo_type, commit_tag, sources_dir, repos):
+    repo_path = os.path.join(repos, repo_path)
+    with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
+        assert sorted(os.listdir(source_path)) == sorted(['m3.java', '.hg_archival.txt'])
+
+@pytest.mark.parametrize('repo_path,repo_type,commit_tag',
+                         [("maven/git/m1", "git", "1.0.1"),
+                          ("maven/hg/m3", "hg", "1.0.1"),
+                          ("maven/svn/m2", "svn", "1.0.0")])
+def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir, repos):
+    repo_path = os.path.join(repos, repo_path)
+    with pytest.raises(Exception) as e:
+        MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
 
 PAYLOAD_TAILOR_DATA = [
     ({"product": "a"}, {"product": "a"}),

@@ -29,7 +29,6 @@ class MavenUtils:
     @staticmethod
     def get_source_path(payload, base_dir):
         """
-        TODO: consider moving this to a utility class.
         For maven, the order to get source code path from different sources:
         [x] 1. if *-sources.jar is valid, download,
                uncompress and return the path to the source code
@@ -52,15 +51,13 @@ class MavenUtils:
         if 'sourcesUrl' in payload:
             sources_url = payload['sourcesUrl']
             if sources_url != "":
-                source_path = MavenUtils.download_jar(sources_url, base_dir)
-        elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
-            repo_path = payload['repoPath']
-            repo_type = payload['repoType']
-            commit_tag = payload['commitTag']
-            source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
-        assert source_path is not None, \
-            f"Cannot get source code for '{payload['groupId']}:{payload['artifactId']}:{payload['version']}'."
-        return source_path
+                return MavenUtils.download_jar(sources_url, base_dir)
+            elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
+                repo_path = payload['repoPath']
+                repo_type = payload['repoType']
+                commit_tag = payload['commitTag']
+                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
+                return source_path
 
     @staticmethod
     def get_source_other(payload, base_dir):
@@ -103,13 +100,13 @@ class MavenUtils:
         elif repo_type == "svn":
             MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
         elif repo_type == "hg":
-            MavenUtils.hg_checkout()
+            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
         return tmp
 
     @staticmethod
     def git_checkout(repo_path, version_tag, tmp_path):
         repo = Repo(repo_path)
-        assert repo.tags[version_tag] is not None, "Tag: '{}' does not exist.".format(version_tag)
+        # assert repo.tag(version_tag) is None, "Tag: '{}' does not exist.".format(version_tag)
         archive_name = version_tag+".zip"
         archive_file_name = tmp_path/archive_name
         repo.git.archive(version_tag, o=archive_file_name)
@@ -118,22 +115,34 @@ class MavenUtils:
 
     @staticmethod
     def svn_checkout(repo_path, version_tag, tmp_path):
-        return None
+        raise NotImplementedError("Svn repo not supported.")
+        # 'svn export' does not support tag
         # r = LocalClient(repo_path)
-        # r.export(tmp, version_tag)
+        # r.export(tmp_path, version_tag)
 
     @staticmethod
     def hg_checkout(repo_path, version_tag, tmp_path):
-        return None
-        # cmd = [
-        #     'hg',
-        #     'archive',
-        #     '-r', version_tag,
-        #     '-t', 'files',
-        #     tmp
-        # ]
-        # proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
-        # o, e = proc.communicate()
+        wd = os.getcwd()
+        os.chdir(repo_path)
+        cmd = [
+            'hg',
+            'archive',
+            '-r', version_tag,
+            '-t', 'files',
+            tmp_path
+        ]
+        try:
+            proc_hg = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+            out, err = proc_hg.communicate()
+        except Exception as e:
+            raise e
+        else:
+            if proc_hg.returncode:
+                err_str = f"Cannot check out '{version_tag}' from repo '{repo_path}', [Error]" + str(err)
+                raise Exception(err_str)
+        finally:
+            os.chdir(wd)
+
 
 class KafkaUtils:
     @staticmethod
