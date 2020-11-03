@@ -131,11 +131,17 @@ class MavenUtils:
             '-t', 'files',
             tmp_path
         ]
-        proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
-        out, err = proc.communicate()
-        os.chdir(wd)
-        if proc.returncode !=0:
-            raise Exception(str(err))
+        try:
+            proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+            out, err = proc.communicate()
+        except Exception as e:
+            raise e
+        else:
+            if proc.returncode != 0:
+                raise Exception(str(err))
+        finally:
+            os.chdir(wd)
+
 
 class KafkaUtils:
     @staticmethod
