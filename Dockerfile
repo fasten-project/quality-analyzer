@@ -15,6 +15,9 @@ RUN useradd -m plugin
 
 USER plugin
 
+RUN git config --global user.email "research@softwareimprovementgroup.com" \
+ && git config --global user.name "Software Improvement Group Research"
+
 WORKDIR /home/plugin
 
 COPY --chown=plugin rapidplugin rapidplugin/

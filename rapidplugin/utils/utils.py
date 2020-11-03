@@ -15,53 +15,133 @@
 
 from zipfile import ZipFile
 from pathlib import Path
-from git import Repo, GitCommandError
+from git import Repo
+from svn.local import LocalClient
 import requests
+import subprocess as sp
+from tempfile import TemporaryDirectory
 import os
+import shutil
 
 
 class MavenUtils:
 
-    # TODO:add exception handling
     @staticmethod
-    def download_jar(url, base_dir):
-        if url == "":
-            return ""
-        else:
-            base_dir = Path(base_dir)
-            if not base_dir.exists():
-                base_dir.mkdir(parents=True)
-            file_name = base_dir/url.split('/')[-1]
-            tmp_dir = base_dir/"tmp"
-            r = requests.get(url, allow_redirects=True)
-            open(file_name, 'wb').write(r.content)
-            with ZipFile(file_name, 'r') as zipObj:
-                zipObj.extractall(tmp_dir)
-            return tmp_dir
-
-    @staticmethod
-    def checkout_version(repo_path, repo_type, version_tag, base_dir):
+    def get_source_path(payload, base_dir):
+        """
+        For maven, the order to get source code path from different sources:
+        [x] 1. if *-sources.jar is valid, download,
+               uncompress and return the path to the source code
+        [x] 2. else if repoPath is not empty, and
+        [x]    2.1 if commit tag is valid, checkout based on tag and return the path
+        [ ]    2.2 if needed, checkout based on the release date.
+        [x] 3. else return None and raise exception (Cannot get source code)
+        """
         base_dir = Path(base_dir)
         if not base_dir.exists():
             base_dir.mkdir(parents=True)
-        tmp_dir = base_dir/"tmp"
+        if payload['forge'] == "mvn":
+            source_path = MavenUtils.get_source_mvn(payload, base_dir)
+        else:
+            source_path = MavenUtils.get_source_other(payload, base_dir)
+        return source_path
+
+    @staticmethod
+    def get_source_mvn(payload, base_dir):
+        if 'sourcesUrl' in payload:
+            sources_url = payload['sourcesUrl']
+            if sources_url != "":
+                return MavenUtils.download_jar(sources_url, base_dir)
+            elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
+                repo_path = payload['repoPath']
+                repo_type = payload['repoType']
+                commit_tag = payload['commitTag']
+                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
+                return source_path
+
+    @staticmethod
+    def get_source_other(payload, base_dir):
+        assert 'sourcePath' in payload, \
+            f"Cannot get source code for '{payload['product']}:{payload['version']}', missing 'sourcePath'."
+        source_path = payload['sourcePath']
+        assert source_path != "", \
+            f"Cannot get source code for '{payload['product']}:{payload['version']}', empty 'sourcePath."
+        assert os.path.isabs(source_path), "sourcePath: '{}' is not an absolute path!".format(source_path)
+        source_path = MavenUtils.copy_source(payload['sourcePath'], base_dir)
+        return source_path
+
+    @staticmethod
+    def copy_source(source_path, base_dir):
+        tmp = TemporaryDirectory(dir=base_dir)
+        tmp_path = Path(tmp.name)
+        shutil.copytree(source_path, tmp_path, dirs_exist_ok=True)
+        return tmp
+
+    @staticmethod
+    def download_jar(url, base_dir):
+        tmp = TemporaryDirectory(dir=base_dir)
+        tmp_path = Path(tmp.name)
+        file_name = tmp_path/url.split('/')[-1]
+        r = requests.get(url, allow_redirects=True)
+        open(file_name, 'wb').write(r.content)
+        with ZipFile(file_name, 'r') as zipObj:
+            zipObj.extractall(tmp_path)
+        return tmp
+
+    @staticmethod
+    def checkout_version(repo_path, repo_type, version_tag, base_dir):
+        assert repo_type in {"git", "svn", "hg"}, "Unknown repo type: '{}'.".format(repo_type)
+        assert repo_path != "", "Empty repo_path."
+        assert version_tag != "", "Empty version_tag."
+        tmp = TemporaryDirectory(dir=base_dir)
+        tmp_path = Path(tmp.name)
         if repo_type == "git":
-            repo = Repo(repo_path)
-            assert repo.tags[version_tag] is not None
-            archive_name = version_tag+".zip"
-            archive_file_name = tmp_dir/archive_name
-            try:
-                # or use repo.archive()
-                repo.git.archive(version_tag, o=archive_file_name)
-                with ZipFile(archive_file_name, 'r') as zipObj:
-                    zipObj.extractall(tmp_dir)
-                return tmp_dir
-            except GitCommandError:
-                return ""
-        if repo_type == "svn":
-            return ""
-        if repo_type == "hg":
-            return ""
+            MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
+        elif repo_type == "svn":
+            MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
+        elif repo_type == "hg":
+            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
+        return tmp
+
+    @staticmethod
+    def git_checkout(repo_path, version_tag, tmp_path):
+        repo = Repo(repo_path)
+        # assert repo.tag(version_tag) is None, "Tag: '{}' does not exist.".format(version_tag)
+        archive_name = version_tag+".zip"
+        archive_file_name = tmp_path/archive_name
+        repo.git.archive(version_tag, o=archive_file_name)
+        with ZipFile(archive_file_name, 'r') as zipObj:
+            zipObj.extractall(tmp_path)
+
+    @staticmethod
+    def svn_checkout(repo_path, version_tag, tmp_path):
+        raise NotImplementedError("Svn repo not supported.")
+        # 'svn export' does not support tag
+        # r = LocalClient(repo_path)
+        # r.export(tmp_path, version_tag)
+
+    @staticmethod
+    def hg_checkout(repo_path, version_tag, tmp_path):
+        wd = os.getcwd()
+        os.chdir(repo_path)
+        cmd = [
+            'hg',
+            'archive',
+            '-r', version_tag,
+            '-t', 'files',
+            tmp_path
+        ]
+        try:
+            proc_hg = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
+            out, err = proc_hg.communicate()
+        except Exception as e:
+            raise e
+        else:
+            if proc_hg.returncode:
+                err_str = f"Cannot check out '{version_tag}' from repo '{repo_path}', [Error]" + str(err)
+                raise Exception(err_str)
+        finally:
+            os.chdir(wd)
 
 
 class KafkaUtils:
@@ -85,21 +165,18 @@ class KafkaUtils:
         to avoid (big) call graph data
         adding to 'input' field in the produced topics.
         """
-        graph = {
-            "graph": {}
+        tailor = {
+            "graph": {},
+            "modules": {},
+            "cha": {},
+            "depset": [],
+            "build_depset": [],
+            "undeclared_depset": [],
+            "functions": {}
         }
-        modules = {
-            "modules": {}
-        }
-        cha = {
-            "cha": {}
-        }
-        if 'graph' in payload:
-            payload.update(graph)
-        if 'modules' in payload:
-            payload.update(modules)
-        if 'cha' in payload:
-            payload.update(cha)
+        for key in tailor.keys():
+            if key in payload:
+                payload[key] = tailor[key]
         return payload
 
 

@@ -61,10 +61,8 @@ def mock_err():
 @pytest.fixture()
 def plugin_run(mock_in, mock_out, mock_log, mock_err,
                in_message):
-    fixed_in_message = fix_sourcePath(in_message,
-                                      '/home/plugin/rapidplugin/tests/resources')
-    mock_in.emit_message(mock_in.produce_topic, fixed_in_message,
-                         "[TEST]", fixed_in_message)
+    mock_in.emit_message(mock_in.produce_topic, in_message,
+                         "[TEST]", in_message)
     sleep(2)
     mock_out.consume_messages()
     mock_log.consume_messages()
@@ -89,7 +87,7 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
     #     "artifactId": "m1",
     #     "version": "1.0.0",
     #     "sourcesUrl": "",
-    #     "repoPath": "maven/git/m1",
+    #     "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/git/m1",
     #     "repoType": "git",
     #     "commitTag": "1.0.0"
     # },
@@ -99,31 +97,31 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
     #     "artifactId": "m2",
     #     "version": "1.0.0",
     #     "sourcesUrl": "",
-    #     "repoPath": "maven/svn/m2",
+    #     "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/svn/m2",
     #     "repoType": "svn",
     #     "commitTag": "1.0.0"
     # },
-    # {
-    #     "forge": "mvn",
-    #     "groupId": "test-mvn",
-    #     "artifactId": "m3",
-    #     "version": "1.0.0",
-    #     "sourcesUrl": "",
-    #     "repoPath": "maven/hg/m3",
-    #     "repoType": "hg",
-    #     "commitTag": "1.0.0"
-    # },
+    {
+        "forge": "mvn",
+        "groupId": "test-mvn",
+        "artifactId": "m3",
+        "version": "1.0.0",
+        "sourcesUrl": "",
+        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoType": "hg",
+        "commitTag": "1.0.0"
+    },
     {
         "forge": "debian",
         "product": "d1",
         "version": "1.0.0",
-        "sourcePath": "debian/d1"
+        "sourcePath": "/home/plugin/rapidplugin/tests/resources/debian/d1"
     },
     {
         "forge": "PyPI",
         "product": "p1",
         "version": "1.0.0",
-        "sourcePath": "pypi/p1"
+        "sourcePath": "/home/plugin/rapidplugin/tests/resources/pypi/p1"
     }])
 def test_successes(plugin_run, in_message):
     out, log, err = plugin_run
@@ -145,6 +143,26 @@ def test_successes(plugin_run, in_message):
         "forge": "PyPI",
         "product": "p1",
         "version": "1.0.0"
+    },
+    {
+        "forge": "mvn",
+        "groupId": "test-mvn",
+        "artifactId": "m2",
+        "version": "1.0.0",
+        "sourcesUrl": "",
+        "repoPath": "maven/svn/m2",
+        "repoType": "svn",
+        "commitTag": "1.0.0"
+    },
+    {
+        "forge": "mvn",
+        "groupId": "test-mvn",
+        "artifactId": "m3",
+        "version": "1.0.1",
+        "sourcesUrl": "",
+        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoType": "hg",
+        "commitTag": "1.0.1"
     }])
 def test_failures(plugin_run, in_message):
     out, log, err = plugin_run
