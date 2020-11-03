@@ -76,7 +76,6 @@ def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
     with pytest.raises(Exception) as e:
         MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
-    print(str(e)+"\n")
 
 PAYLOAD_TAILOR_DATA = [
     ({"product": "a"}, {"product": "a"}),

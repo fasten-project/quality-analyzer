@@ -101,16 +101,16 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
     #     "repoType": "svn",
     #     "commitTag": "1.0.0"
     # },
-    # {
-    #     "forge": "mvn",
-    #     "groupId": "test-mvn",
-    #     "artifactId": "m3",
-    #     "version": "1.0.0",
-    #     "sourcesUrl": "",
-    #     "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
-    #     "repoType": "hg",
-    #     "commitTag": "1.0.0"
-    # },
+    {
+        "forge": "mvn",
+        "groupId": "test-mvn",
+        "artifactId": "m3",
+        "version": "1.0.0",
+        "sourcesUrl": "",
+        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoType": "hg",
+        "commitTag": "1.0.0"
+    },
     {
         "forge": "debian",
         "product": "d1",
@@ -160,7 +160,7 @@ def test_successes(plugin_run, in_message):
         "artifactId": "m3",
         "version": "1.0.1",
         "sourcesUrl": "",
-        "repoPath": "maven/hg/m3",
+        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
         "repoType": "hg",
         "commitTag": "1.0.1"
     }])
