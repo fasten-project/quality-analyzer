@@ -15,6 +15,9 @@ RUN useradd -m plugin
 
 USER plugin
 
+RUN git config --global user.email "research@softwareimprovementgroup.com" \
+ && git config --global user.name "Software Improvement Group Research"
+
 WORKDIR /home/plugin
 
 COPY --chown=plugin rapidplugin rapidplugin/
@@ -24,5 +27,7 @@ COPY --chown=plugin requirements.txt .
 COPY --chown=plugin README.md .
 
 RUN python -m pip install -r requirements.txt
+
+RUN python -m pytest rapidplugin/tests
 
 ENTRYPOINT ["python", "/home/plugin/entrypoint.py"]
