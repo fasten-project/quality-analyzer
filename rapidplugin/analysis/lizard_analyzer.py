@@ -13,10 +13,8 @@
 # limitations under the License.
 #
 
-import os
 import logging
 import datetime
-from pathlib import Path
 
 import lizard
 
