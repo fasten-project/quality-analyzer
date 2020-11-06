@@ -52,7 +52,8 @@ class MavenUtils:
             sources_url = payload['sourcesUrl']
             if sources_url != "":
                 return MavenUtils.download_jar(sources_url, base_dir)
-            elif 'repoPath' in payload and 'commitTag' in payload and 'repoType' in payload:
+            else:
+                assert 'repoType' in payload, f"Missing field 'repoType' to check out source code."
                 repo_path = payload['repoPath']
                 repo_type = payload['repoType']
                 commit_tag = payload['commitTag']
