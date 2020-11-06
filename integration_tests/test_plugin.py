@@ -131,6 +131,7 @@ def test_successes(plugin_run, in_message):
 
 
 @pytest.mark.parametrize('in_message', [
+    # missing 'forge'
     {
         "groupId": "ai.api",
         "artifactId": "libai",
@@ -139,11 +140,13 @@ def test_successes(plugin_run, in_message):
         "repoType": "",
         "commitTag": ""
     },
+    # missing 'sourcePath' for pypi
     {
         "forge": "PyPI",
         "product": "p1",
         "version": "1.0.0"
     },
+    # empty 'sourcesUrl', and svn repo not supported
     {
         "forge": "mvn",
         "groupId": "test-mvn",
@@ -154,6 +157,7 @@ def test_successes(plugin_run, in_message):
         "repoType": "svn",
         "commitTag": "1.0.0"
     },
+    # empty 'sourcesUrl', and invalid 'commitTag'
     {
         "forge": "mvn",
         "groupId": "test-mvn",
@@ -163,7 +167,52 @@ def test_successes(plugin_run, in_message):
         "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
         "repoType": "hg",
         "commitTag": "1.0.1"
-    }])
+    },
+    # empty 'sourcesUrl', and missing 'repoType'
+    {
+        "date": 1434489838,
+        "forge": "mvn",
+        "groupId": "org.apache.avro",
+        "sourcesUrl": "",
+        "artifactId": "trevni-doc",
+        "repoPath": "",
+        "version": "1.7.6-cdh5.4.2.1",
+        "commitTag": ""
+    },
+    # empty 'sourcesUrl', and empty 'repoPath'
+    {
+        "forge": "mvn",
+        "groupId": "test-mvn",
+        "artifactId": "m3",
+        "version": "1.0.0",
+        "sourcesUrl": "",
+        "repoPath": "",
+        "repoType": "hg",
+        "commitTag": "1.0.0"
+    },
+    # empty 'sourcesUrl', and empty 'repoType'
+    {
+        "forge": "mvn",
+        "groupId": "test-mvn",
+        "artifactId": "m3",
+        "version": "1.0.0",
+        "sourcesUrl": "",
+        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoType": "",
+        "commitTag": "1.0.0"
+    },
+    # empty 'sourcesUrl', and empty 'commitTag'
+    {
+        "forge": "mvn",
+        "groupId": "test-mvn",
+        "artifactId": "m3",
+        "version": "1.0.0",
+        "sourcesUrl": "",
+        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoType": "hg",
+        "commitTag": ""
+    }
+])
 def test_failures(plugin_run, in_message):
     out, log, err = plugin_run
     assert len(out) == 0
