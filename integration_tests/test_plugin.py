@@ -17,7 +17,6 @@ import pytest
 from time import sleep
 from integration_tests.mocks import MockConsumer
 from integration_tests.mocks import MockProducer
-from rapidplugin.tests.sources import fix_sourcePath
 
 
 @pytest.fixture()

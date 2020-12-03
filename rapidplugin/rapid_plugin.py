@@ -15,7 +15,7 @@
 
 import datetime
 from time import sleep
-from rapidplugin.kafka_non_blocking import KafkaPluginNonBlocking
+from fasten.plugins.kafka import KafkaPluginNonBlocking
 from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 from rapidplugin.utils.utils import KafkaUtils
 
