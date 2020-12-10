@@ -79,6 +79,7 @@ def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
     with pytest.raises(Exception) as e:
         MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
+    print(str(e))
 
 PAYLOAD_TAILOR_DATA = [
     ({"product": "a"}, {"product": "a"}),
@@ -91,3 +92,9 @@ def test_tailor_input(in_payload, out_payload):
     tailored = KafkaUtils.tailor_input(in_payload)
     assert tailored == out_payload
 
+@pytest.mark.parametrize('old, new', [
+    ('/private/var/folders/wr/qmdcbfsj4v98v8rwb11zjr5c0000gn/T/pytest-of-cgao/pytest-7/sources0/tmppsmmokh_/d1.c', 'd1.c')
+])
+def test_relativize_filename(old, new):
+    new_file_name = KafkaUtils.relativize_filename(old)
+    assert new_file_name == new

@@ -101,6 +101,12 @@ FUNCTION_METRICS_DATA = [
     (pypi_message, 2, 1, 5)
 ]
 
+# List of (payload, filename) pairs
+FUNCTION_FILENAME_DATA = [
+    # (mvn_message_with_hg_repo, "m3.java"),
+    (debian_message, "d1.c"),
+    (pypi_message, "p1.py")
+]
 
 @pytest.mark.parametrize('record,fc', FUNCTION_COUNT_DATA)
 def test_function_count(analyzer, sources, record, fc: int):
@@ -123,3 +129,10 @@ def test_function_metrics(analyzer, sources, record, nloc: int, complexity: int,
     assert metrics['nloc'] == nloc
     assert metrics['complexity'] == complexity
     assert metrics['token_count'] == token_count
+
+
+@pytest.mark.parametrize('record,filename', FUNCTION_FILENAME_DATA)
+def test_function_filename(analyzer, sources, record, filename):
+    out_payloads = analyzer.analyze(fix_sourcePath(record, sources))
+    metadata = out_payloads[0]
+    assert metadata['filename'] == filename

@@ -22,6 +22,7 @@ import subprocess as sp
 from tempfile import TemporaryDirectory
 import os
 import shutil
+import re
 
 
 class MavenUtils:
@@ -180,4 +181,7 @@ class KafkaUtils:
                 payload[key] = tailor[key]
         return payload
 
-
+    @staticmethod
+    def relativize_filename(filename):
+        regex = re.compile('(/tmp).{8}/')
+        return regex.split(filename)[2]
