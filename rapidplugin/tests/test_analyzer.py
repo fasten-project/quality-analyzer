@@ -103,7 +103,7 @@ FUNCTION_METRICS_DATA = [
 
 # List of (payload, filename) pairs
 FUNCTION_FILENAME_DATA = [
-    # (mvn_message_with_hg_repo, "m3.java"),
+    (mvn_message_with_hg_repo, "m3.java"),
     (debian_message, "d1.c"),
     (pypi_message, "p1.py")
 ]
