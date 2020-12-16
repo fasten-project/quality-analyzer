@@ -182,6 +182,26 @@ class KafkaUtils:
         return payload
 
     @staticmethod
+    def extract_from_sync(payload):
+        """
+        Extract content of RepoCloner in the synchronized topic.
+        :param payload: payload of fasten.SyncJava.out, see
+                        https://github.com/fasten-project/synchronize-javacg
+        :return: payload of RepoCloner, see
+                        https://github.com/fasten-project/fasten/wiki/Kafka-Topics#fastenrepocloner
+        """
+        extract = payload['fasten.RepoCloner.out'] if 'fasten.RepoCloner.out' in payload else payload
+        return extract
+
+    @staticmethod
     def relativize_filename(filename):
+        """
+        Extract the relative path of the source code file.
+        :param filename: absolute path included by Lizard tool,
+                        e.g. 'work_directory/tmppsmmokh_/d1.c'
+        :return: filename relative to the temporal source directory,
+                        e.g. 'd1.c'
+
+        """
         regex = re.compile('(/tmp).{8}/')
         return regex.split(filename)[2]
