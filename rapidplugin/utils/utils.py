@@ -49,6 +49,7 @@ class MavenUtils:
 
     @staticmethod
     def get_source_mvn(payload, base_dir):
+        source_config = {}
         if 'sourcesUrl' in payload:
             sources_url = payload['sourcesUrl']
             if sources_url != "":
@@ -58,7 +59,7 @@ class MavenUtils:
                 repo_path = payload['repoPath']
                 repo_type = payload['repoType']
                 commit_tag = payload['commitTag']
-                source_path = MavenUtils.checkout_version(repo_path, repo_type, commit_tag, base_dir)
+                source_path = MavenUtils.checkout_version(base_dir, repo_path=repo_path, repo_type=repo_type, version_tag=commit_tag)
                 return source_path
 
     @staticmethod
@@ -91,22 +92,28 @@ class MavenUtils:
         return tmp
 
     @staticmethod
-    def checkout_version(repo_path, repo_type, version_tag, base_dir):
+    def checkout_version(base_dir, **source_config):
+        repo_type = source_config['repo_type']
+        repo_path = source_config['repo_path']
+        version_tag = source_config['version_tag']
         assert repo_type in {"git", "svn", "hg"}, "Unknown repo type: '{}'.".format(repo_type)
         assert repo_path != "", "Empty repo_path."
         assert version_tag != "", "Empty version_tag."
         tmp = TemporaryDirectory(dir=base_dir)
         tmp_path = Path(tmp.name)
         if repo_type == "git":
-            MavenUtils.git_checkout(repo_path, version_tag, tmp_path)
+            MavenUtils.git_checkout(repo_path=repo_path, version_tag=version_tag, tmp_path=tmp_path)
         elif repo_type == "svn":
-            MavenUtils.svn_checkout(repo_path, version_tag, tmp_path)
+            MavenUtils.svn_checkout(repo_path=repo_path, version_tag=version_tag, tmp_path=tmp_path)
         elif repo_type == "hg":
-            MavenUtils.hg_checkout(repo_path, version_tag, tmp_path)
+            MavenUtils.hg_checkout(repo_path=repo_path, version_tag=version_tag, tmp_path=tmp_path)
         return tmp
 
     @staticmethod
-    def git_checkout(repo_path, version_tag, tmp_path):
+    def git_checkout(**source_config):
+        repo_path = source_config['repo_path']
+        version_tag = source_config['version_tag']
+        tmp_path = source_config['tmp_path']
         repo = Repo(repo_path)
         # assert repo.tag(version_tag) is None, "Tag: '{}' does not exist.".format(version_tag)
         archive_name = version_tag+".zip"
@@ -116,14 +123,17 @@ class MavenUtils:
             zipObj.extractall(tmp_path)
 
     @staticmethod
-    def svn_checkout(repo_path, version_tag, tmp_path):
+    def svn_checkout(**source_config):
         raise NotImplementedError("Svn repo not supported.")
         # 'svn export' does not support tag
         # r = LocalClient(repo_path)
         # r.export(tmp_path, version_tag)
 
     @staticmethod
-    def hg_checkout(repo_path, version_tag, tmp_path):
+    def hg_checkout(**source_config):
+        repo_path = source_config['repo_path']
+        version_tag = source_config['version_tag']
+        tmp_path = source_config['tmp_path']
         wd = os.getcwd()
         os.chdir(repo_path)
         cmd = [
