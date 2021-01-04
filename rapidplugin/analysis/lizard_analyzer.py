@@ -19,7 +19,7 @@ import datetime
 import lizard
 
 from rapidplugin.domain.package import Package, File, Function
-from rapidplugin.utils.utils import MavenUtils
+from rapidplugin.utils.utils import MavenUtils, KafkaUtils
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +45,9 @@ class LizardAnalyzer:
             m.update(metadata)
             m.update(function.metadata())
             m.update(function.metrics())
+            old_f = m['filename']
+            new_f = KafkaUtils.relativize_filename(old_f)
+            m.update({'filename': new_f})
             out_payloads.append(m)
             logger.debug("callable: {}".format(m) + '\n')
         return out_payloads
