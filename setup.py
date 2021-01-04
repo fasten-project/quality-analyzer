@@ -8,7 +8,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='quality-analyzer',
-    version='1.0.0',
+    version='1.1.0',
     description='FASTEN RAPID Plugin',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -16,11 +16,11 @@ setup(
     author='',
     author_email='',
     classifiers=[
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     keywords='',
     packages=find_packages(),
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     install_requires=[
         'fasten',
         'lizard',

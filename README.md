@@ -29,27 +29,29 @@ The currently supported forges are "mvn", "debian", and "PyPI".
 The plugin will raise an exception if the `forge` in the message is not supported or empty.
 
 #### Maven
-The default topic to consume: `fasten.RepoCloner.out`
+The default topic to consume: `fasten.SyncJava.out`
 
-An example message:
+An example message produced by the SyncJava plugin, which merges out messages from RepoCloner and JavaCGOpal:
 
 ```json
 {
   "input": {},
   "host": "fasten-repo-cloner-56dcf76495-bn4c2",
   "created_at": 1602739158,
-  "plugin_name": "RepoCloner",
-  "payload": {
-    "repoUrl": "",
-    "date": 1291905586,
-    "forge": "mvn",
-    "groupId": "fasten-project",
-    "artifactId": "fasten",
-    "version": "1.0.0",
-    "sourcesUrl": "http://fasten-project/fasten/fasten-1.0.0-sources.jar",
-    "repoPath": "/mnt/fasten/repos/f/fasten-project/fasten",
-    "repoType": "git",
-    "commitTag": "v1.0.0"
+  "plugin_name": "SyncJava",
+  "fasten.RepoCloner.out" : {
+    "payload": {
+        "repoUrl": "",
+        "date": 1291905586,
+        "forge": "mvn",
+        "groupId": "fasten-project",
+        "artifactId": "fasten",
+        "version": "1.0.0",
+        "sourcesUrl": "http://fasten-project/fasten/fasten-1.0.0-sources.jar",
+        "repoPath": "/mnt/fasten/repos/f/fasten-project/fasten",
+        "repoType": "git",
+        "commitTag": "v1.0.0"
+    }
   }
 }
 ```

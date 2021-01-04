@@ -17,7 +17,6 @@ import pytest
 from time import sleep
 from integration_tests.mocks import MockConsumer
 from integration_tests.mocks import MockProducer
-from rapidplugin.tests.sources import fix_sourcePath
 
 
 @pytest.fixture()
@@ -110,6 +109,17 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
         "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
         "repoType": "hg",
         "commitTag": "1.0.0"
+    },
+    {
+        "fasten.RepoCloner.out": {
+            "payload":
+                {
+                    "forge": "debian",
+                    "product": "d1",
+                    "version": "1.0.0",
+                    "sourcePath": "/home/plugin/rapidplugin/tests/resources/debian/d1"
+                }
+        }
     },
     {
         "forge": "debian",

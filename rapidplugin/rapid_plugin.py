@@ -15,7 +15,7 @@
 
 import datetime
 from time import sleep
-from rapidplugin.kafka_non_blocking import KafkaPluginNonBlocking
+from fasten.plugins.kafka import KafkaPluginNonBlocking
 from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
 from rapidplugin.utils.utils import KafkaUtils
 
@@ -104,6 +104,7 @@ class RapidPlugin(KafkaPluginNonBlocking):
         Arguments:
           record (JSON): message from self.consume_topic
         '''
+        record = KafkaUtils.extract_from_sync(record)
         payload = record['payload'] if 'payload' in record else record
         in_payload = KafkaUtils.tailor_input(payload)
         try:
