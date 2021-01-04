@@ -59,13 +59,13 @@ def test_checkout_git(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo.git.add(".")
     repo.git.commit(m="first commit.")
     repo.create_tag('1.0.0')
-    with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
+    with MavenUtils.checkout_version(sources_dir,repo_path=repo_path, repo_type=repo_type, version_tag=commit_tag) as source_path:
         assert sorted(os.listdir(Path(source_path))) == sorted(['1.0.0.zip', 'm1.java'])
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag', [("maven/hg/m3", "hg", "1.0.0")])
 def test_checkout_hg(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
-    with MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir) as source_path:
+    with MavenUtils.checkout_version(sources_dir, repo_path=repo_path, repo_type=repo_type, version_tag=commit_tag) as source_path:
         assert sorted(os.listdir(source_path)) == sorted(['m3.java', '.hg_archival.txt'])
 
 @pytest.mark.parametrize('repo_path,repo_type,commit_tag',
@@ -78,7 +78,7 @@ def test_checkout_hg(repo_path, repo_type, commit_tag, sources_dir, repos):
 def test_checkout_fail(repo_path, repo_type, commit_tag, sources_dir, repos):
     repo_path = os.path.join(repos, repo_path)
     with pytest.raises(Exception) as e:
-        MavenUtils.checkout_version(repo_path, repo_type, commit_tag, sources_dir)
+        MavenUtils.checkout_version(sources_dir, repo_path=repo_path, repo_type=repo_type, version_tag=commit_tag)
     print(str(e))
 
 PAYLOAD_TAILOR_DATA = [

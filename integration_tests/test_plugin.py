@@ -111,6 +111,17 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
         "commitTag": "1.0.0"
     },
     {
+        "fasten.RepoCloner.out": {
+            "payload":
+                {
+                    "forge": "debian",
+                    "product": "d1",
+                    "version": "1.0.0",
+                    "sourcePath": "/home/plugin/rapidplugin/tests/resources/debian/d1"
+                }
+        }
+    },
+    {
         "forge": "debian",
         "product": "d1",
         "version": "1.0.0",

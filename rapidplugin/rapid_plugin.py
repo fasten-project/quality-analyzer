@@ -104,6 +104,7 @@ class RapidPlugin(KafkaPluginNonBlocking):
         Arguments:
           record (JSON): message from self.consume_topic
         '''
+        record = KafkaUtils.extract_from_sync(record)
         payload = record['payload'] if 'payload' in record else record
         in_payload = KafkaUtils.tailor_input(payload)
         try:
