@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 plugin_name = 'RapidPlugin'
 plugin_description = 'A FASTEN plug-in to populate risk related metadata for a product.'
-plugin_version = '1.0.0'
+plugin_version = '1.1.0'
 
 
 def get_args_parser():
