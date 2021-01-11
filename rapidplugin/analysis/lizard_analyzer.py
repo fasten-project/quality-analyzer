@@ -115,6 +115,7 @@ class LizardFunction(Function):
         self.complexity = func_info.cyclomatic_complexity
         self.token_count = func_info.token_count
         self.parameters = func_info.parameters
+        self.parameter_count = len(func_info.parameters)
         self.start_line = func_info.start_line
         self.end_line = func_info.end_line
         self.fan_in = func_info.fan_in
