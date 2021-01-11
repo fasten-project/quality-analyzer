@@ -94,11 +94,11 @@ FUNCTION_LINE_DATA = [
     (pypi_message, 1, 2)
 ]
 
-# List of (payload, nloc, complexity, token_count) tuples
+# List of (payload, nloc, complexity, token_count, parameter_count) tuples
 FUNCTION_METRICS_DATA = [
-    (mvn_message_with_hg_repo, 3, 1, 18),
-    (debian_message, 1, 1, 5),
-    (pypi_message, 2, 1, 5)
+    (mvn_message_with_hg_repo, 3, 1, 18, 1),
+    (debian_message, 1, 1, 5, 0),
+    (pypi_message, 2, 1, 5, 0)
 ]
 
 # List of (payload, filename) pairs
@@ -122,13 +122,14 @@ def test_function_location(analyzer, sources, record, start_line: int, end_line:
     assert metadata['end_line'] == end_line
 
 
-@pytest.mark.parametrize('record,nloc,complexity,token_count', FUNCTION_METRICS_DATA)
-def test_function_metrics(analyzer, sources, record, nloc: int, complexity: int, token_count: int):
+@pytest.mark.parametrize('record,nloc,complexity,token_cnt,parameter_cnt', FUNCTION_METRICS_DATA)
+def test_function_metrics(analyzer, sources, record, nloc: int, complexity: int, token_cnt: int, parameter_cnt: int):
     out_payloads = analyzer.analyze(fix_sourcePath(record, sources))
     metrics = out_payloads[0]['metrics']
     assert metrics['nloc'] == nloc
     assert metrics['complexity'] == complexity
-    assert metrics['token_count'] == token_count
+    assert metrics['token_count'] == token_cnt
+    assert metrics['parameter_count'] == parameter_cnt
 
 
 @pytest.mark.parametrize('record,filename', FUNCTION_FILENAME_DATA)

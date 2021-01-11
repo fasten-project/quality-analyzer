@@ -155,6 +155,7 @@ class Function(ABC):
         self.complexity = None
         self.token_count = None
         self.parameters = None
+        self.parameter_count = None
         self.start_line = None
         self.end_line = None
         self.fan_in = None
@@ -179,7 +180,8 @@ class Function(ABC):
                 "complexity": self.complexity,
                 "token_count": self.token_count,
                 "parameters": self.parameters,
-                "length": self.length
+                "length": self.length,
+                "parameter_count": self.parameter_count
             }
         }
 
