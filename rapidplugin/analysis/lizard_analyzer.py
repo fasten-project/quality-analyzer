@@ -86,9 +86,9 @@ class LizardPackage(Package):
 
     def _get_analyzer(self):
         return {
-            "analyzer_name": "lizard",
-            "analyzer_version": lizard.version,
-            "analysis_timestamp": self.timestamp
+            "quality_analyzer_name": "Lizard",
+            "quality_analyzer_version": lizard.version,
+            "quality_analysis_timestamp": self.timestamp
         }
 
 
