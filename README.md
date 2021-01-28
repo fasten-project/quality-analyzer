@@ -188,22 +188,25 @@ An example message:
   "input": {},
   "created_at": "1595434993",
   "payload": {
-    "analyzer_name": "Lizard",
-    "analyzer_version": "1.17.7",
-    "analysis_timestamp": "1596455923",
+    "quality_analyzer_name": "Lizard",
+    "quality_analyzer_version": "1.17.7",
+    "quality_analysis_timestamp": "1596455923",
     "product": "fasten-project:fasten",
     "version": "1.0.0",
     "forge": "mvn",
     "language": "java",
-    "filepath": "/fasten/core/server.java",
-    "name": "callable",
-    "long_name": "callable(int i)",
+    "filename": "/fasten/core/server.java",
+    "callable_name": "callable",
+    "callable_long_name": "callable(int i)",
     "start_line": 33,
     "end_line": 42,
     "metrics": {
       "nloc": 10,
-      "complexity": 5,  
-      "...": 0
+      "complexity": 5,
+      "token_count": 20,
+      "parameters": ["i"],
+      "parameter_count": 1,
+      "length": 10
     }
   }
 }
