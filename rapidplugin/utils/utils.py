@@ -205,7 +205,14 @@ class KafkaUtils:
         return extract
 
     @staticmethod
-    def extract_from_metadata_ext(payload):
+    def extract_from_metadata_db_ext_topic(payload):
+        """
+        Extract content of MetaDataDB{Java|C|Python}Extension.out topic.
+        :param payload: payload of MetaDataDB{Java|C|Python}Extension.out, see
+                        https://github.com/fasten-project/fasten/wiki/Kafka-Topics#fastenmetadatadbextension
+        :return: extracted payload
+        """
+
         extract = payload['input']['input'] if 'input' in payload and 'input' in payload['input'] else payload
         return extract
     
