@@ -184,7 +184,8 @@ class KafkaUtils:
             "depset": [],
             "build_depset": [],
             "undeclared_depset": [],
-            "functions": {}
+            "functions": {},
+            "dependencyData" : {}
         }
         for key in tailor.keys():
             if key in payload:
@@ -203,6 +204,11 @@ class KafkaUtils:
         extract = payload['fasten.RepoCloner.out'] if 'fasten.RepoCloner.out' in payload else payload
         return extract
 
+    @staticmethod
+    def extract_from_metadata_ext(payload):
+        extract = payload['input']['input'] if 'input' in payload and 'input' in payload['input'] else payload
+        return extract
+    
     @staticmethod
     def relativize_filename(filename):
         """
