@@ -34,15 +34,19 @@ def get_args_parser():
                              help="Kafka topic to consume from.")
 
     args_parser.add_argument('--produce_topic', type=str,
-                             default='fasten.RapidPlugin.callable.out',
-                             help="Kafka topic to produce to.")
+                             default='fasten.RapidPlugin.out',
+                             help="Kafka topic to produce revision-level message to.")
 
+    args_parser.add_argument('--produce_callable_topic', type=str,
+                             default='fasten.RapidPlugin.callable.out',
+                             help="Kafka topic to produce callable-level messages to.")
+    
     args_parser.add_argument('--err_topic', type=str,
-                             default='fasten.RapidPlugin.callable.err',
+                             default='fasten.RapidPlugin.err',
                              help="Kafka topic to write errors to.")
 
     args_parser.add_argument('--log_topic', type=str,
-                             default='fasten.RapidPlugin.callable.log',
+                             default='fasten.RapidPlugin.log',
                              help="Kafka topic to write logs to.")
 
     args_parser.add_argument('--bootstrap_servers', type=str,

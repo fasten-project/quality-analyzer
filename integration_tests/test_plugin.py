@@ -41,7 +41,7 @@ def mock_out():
 def mock_log():
     mock = MockConsumer('MockConsumerLog',
                         'localhost:9092',
-                        'fasten.RapidPlugin.callable.log')
+                        'fasten.RapidPlugin.log')
     mock.skip_messages()
     yield mock
     mock.free_resource()
@@ -51,7 +51,7 @@ def mock_log():
 def mock_err():
     mock = MockConsumer('MockConsumerErr',
                         'localhost:9092',
-                        'fasten.RapidPlugin.callable.err')
+                        'fasten.RapidPlugin.err')
     mock.skip_messages()
     yield mock
     mock.free_resource()
