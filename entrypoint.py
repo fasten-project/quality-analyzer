@@ -64,6 +64,11 @@ def get_args_parser():
     args_parser.add_argument('--sources_dir', type=str,
                              default='src',
                              help="Base directory for temporary storing downloaded source code.")
+
+    args_parser.add_argument('--max_log_message_width', type=int,
+                             default=320,
+                             help="Maximum number of characters before a log message will be truncated.")
+
     return args_parser
 
 
@@ -72,12 +77,14 @@ def get_config(args):
     c.add_config_value('bootstrap_servers', args.bootstrap_servers)
     c.add_config_value('consume_topic', args.consume_topic)
     c.add_config_value('produce_topic', args.produce_topic)
+    c.add_config_value('produce_callable_topic', args.produce_callable_topic)
     c.add_config_value('err_topic', args.err_topic)
     c.add_config_value('log_topic', args.log_topic)
     c.add_config_value('group_id', args.group_id)
     c.add_config_value('consumption_delay_sec', args.consumption_delay_sec)
     c.add_config_value('consumer_timeout_ms', args.consumer_timeout_ms)
     c.add_config_value('sources_dir', args.sources_dir)
+    c.add_config_value('max_log_message_width', args.max_log_message_width)
     return c
 
 

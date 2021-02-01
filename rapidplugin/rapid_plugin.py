@@ -14,6 +14,7 @@
 #
 
 import datetime
+import textwrap
 from time import sleep
 from fasten.plugins.kafka import KafkaPluginNonBlocking
 from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
@@ -173,7 +174,7 @@ class RapidPlugin(KafkaPluginNonBlocking):
 
     def log(self, message):
         super().log("{}: {}".format(
-            str(datetime.datetime.now()), message
+            str(datetime.datetime.now()), textwrap.shorten(message, width=self.max_log_message_width)
         ))
 
     def err(self, error):
