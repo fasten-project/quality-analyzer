@@ -107,8 +107,7 @@ class RapidPlugin(KafkaPluginNonBlocking):
         Arguments:
           record (JSON): message from self.consume_topic
         '''
-        record = KafkaUtils.extract_from_metadata_db_ext_topic(record)
-        payload = record['payload'] if 'payload' in record else record
+        payload = KafkaUtils.extract_payload_from_metadata_db_ext_topic(record)
         in_payload = KafkaUtils.tailor_input(payload)
         try:
             KafkaUtils.validate_message(payload)

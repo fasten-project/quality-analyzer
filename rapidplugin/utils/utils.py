@@ -42,10 +42,9 @@ class MavenUtils:
         if not base_dir.exists():
             base_dir.mkdir(parents=True)
         if payload['forge'] == "mvn":
-            source_path = MavenUtils.get_source_mvn(payload, base_dir)
+            return MavenUtils.get_source_mvn(payload, base_dir)
         else:
-            source_path = MavenUtils.get_source_other(payload, base_dir)
-        return source_path
+            return MavenUtils.get_source_other(payload, base_dir)
 
     @staticmethod
     def get_source_mvn(payload, base_dir):
@@ -59,8 +58,7 @@ class MavenUtils:
                 repo_path = payload['repoPath']
                 repo_type = payload['repoType']
                 commit_tag = payload['commitTag']
-                source_path = MavenUtils.checkout_version(base_dir, repo_path=repo_path, repo_type=repo_type, version_tag=commit_tag)
-                return source_path
+                return MavenUtils.checkout_version(base_dir, repo_path=repo_path, repo_type=repo_type, version_tag=commit_tag)
 
     @staticmethod
     def get_source_other(payload, base_dir):
@@ -70,14 +68,12 @@ class MavenUtils:
         assert source_path != "", \
             f"Cannot get source code for '{payload['product']}:{payload['version']}', empty 'sourcePath."
         assert os.path.isabs(source_path), "sourcePath: '{}' is not an absolute path!".format(source_path)
-        source_path = MavenUtils.copy_source(payload['sourcePath'], base_dir)
-        return source_path
+        return MavenUtils.copy_source(source_path, base_dir)
 
     @staticmethod
     def copy_source(source_path, base_dir):
         tmp = TemporaryDirectory(dir=base_dir)
-        tmp_path = Path(tmp.name)
-        shutil.copytree(source_path, tmp_path, dirs_exist_ok=True)
+        shutil.copytree(source_path, tmp.name, dirs_exist_ok=True)
         return tmp
 
     @staticmethod
@@ -205,17 +201,27 @@ class KafkaUtils:
         return extract
 
     @staticmethod
-    def extract_from_metadata_db_ext_topic(payload):
+    def extract_payload_from_metadata_db_ext_topic(received):
         """
         Extract content of MetaDataDB{Java|C|Python}Extension.out topic.
         :param payload: payload of MetaDataDB{Java|C|Python}Extension.out, see
                         https://github.com/fasten-project/fasten/wiki/Kafka-Topics#fastenmetadatadbextension
         :return: extracted payload
         """
+        try: # MetaDataDBJavaExtension.out
+            received['input']['input']['payload']['forge']
+            return received['input']['input']['payload']
+        except KeyError: pass
+        try: # MetaDataDB{Python|C}Extension.out
+            received['input']['payload']['forge']
+            return received['input']['payload']
+        except KeyError: pass
+        try:
+            received['payload']['forge']
+            return received['payload']
+        except KeyError: pass
+        return received
 
-        extract = payload['input']['input'] if 'input' in payload and 'input' in payload['input'] else payload
-        return extract
-    
     @staticmethod
     def relativize_filename(filename):
         """
@@ -226,5 +232,5 @@ class KafkaUtils:
                         e.g. 'd1.c'
 
         """
-        regex = re.compile('(/tmp).{8}/')
-        return regex.split(filename)[2]
+        p = Path(filename)
+        return p.name
