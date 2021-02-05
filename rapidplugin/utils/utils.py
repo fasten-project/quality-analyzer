@@ -14,7 +14,7 @@
 #
 
 from zipfile import ZipFile
-from pathlib import Path
+from pathlib import Path, PurePath
 from git import Repo
 from svn.local import LocalClient
 import requests
@@ -223,14 +223,14 @@ class KafkaUtils:
         return received
 
     @staticmethod
-    def relativize_filename(filename):
+    def relativize_filename(filename, prefix):
         """
         Extract the relative path of the source code file.
         :param filename: absolute path included by Lizard tool,
-                        e.g. 'work_directory/tmppsmmokh_/d1.c'
+                        e.g. '/abs_path/rel_path/d1.c'
+        :param prefix: the prefix path to remove to make the path relative
         :return: filename relative to the temporal source directory,
-                        e.g. 'd1.c'
-
+                        e.g. 'rel_path/d1.c'
         """
-        p = Path(filename)
-        return p.name
+        p = PurePath(filename)
+        return str(p.relative_to(prefix))
