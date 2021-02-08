@@ -39,17 +39,17 @@ class LizardAnalyzer:
         version = payload['version']
         with MavenUtils.get_source_path(payload, self.base_dir) as path:
             package = LizardPackage(forge, product, version, str(path))
-        metadata = package.metadata()
-        for function in package.functions():
-            m = {}
-            m.update(metadata)
-            m.update(function.metadata())
-            m.update(function.metrics())
-            old_f = m['filename']
-            new_f = KafkaUtils.relativize_filename(old_f)
-            m.update({'filename': new_f})
-            out_payloads.append(m)
-            logger.debug("callable: {}".format(m) + '\n')
+            metadata = package.metadata()
+            for function in package.functions():
+                m = {}
+                m.update(metadata)
+                m.update(function.metadata())
+                m.update(function.metrics())
+                old_f = m['filename']
+                new_f = KafkaUtils.relativize_filename(old_f, str(path))
+                m.update({'filename': new_f})
+                out_payloads.append(m)
+                logger.debug("callable: {}".format(m) + '\n')
         return out_payloads
 
 

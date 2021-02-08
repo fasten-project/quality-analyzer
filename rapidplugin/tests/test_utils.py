@@ -92,9 +92,9 @@ def test_tailor_input(in_payload, out_payload):
     tailored = KafkaUtils.tailor_input(in_payload)
     assert tailored == out_payload
 
-@pytest.mark.parametrize('old, new', [
-    ('/private/var/folders/wr/qmdcbfsj4v98v8rwb11zjr5c0000gn/T/pytest-of-cgao/pytest-7/sources0/tmppsmmokh_/d1.c', 'd1.c')
+@pytest.mark.parametrize('old, prefix, new', [
+    ('/abs_path/rel_dir/d1.c', '/abs_path', 'rel_dir/d1.c')
 ])
-def test_relativize_filename(old, new):
-    new_file_name = KafkaUtils.relativize_filename(old)
-    assert new_file_name == new
+def test_relativize_filename(old, prefix, new):
+    new_file_name = KafkaUtils.relativize_filename(old, prefix)
+    assert Path(new_file_name) == Path(new)

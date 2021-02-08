@@ -41,7 +41,7 @@ def mock_out():
 def mock_log():
     mock = MockConsumer('MockConsumerLog',
                         'localhost:9092',
-                        'fasten.RapidPlugin.callable.log')
+                        'fasten.RapidPlugin.log')
     mock.skip_messages()
     yield mock
     mock.free_resource()
@@ -51,7 +51,7 @@ def mock_log():
 def mock_err():
     mock = MockConsumer('MockConsumerErr',
                         'localhost:9092',
-                        'fasten.RapidPlugin.callable.err')
+                        'fasten.RapidPlugin.err')
     mock.skip_messages()
     yield mock
     mock.free_resource()
@@ -111,14 +111,15 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
         "commitTag": "1.0.0"
     },
     {
-        "fasten.RepoCloner.out": {
-            "payload":
-                {
+        "input" : {
+            "input": {
+                "payload": {
                     "forge": "debian",
                     "product": "d1",
                     "version": "1.0.0",
                     "sourcePath": "/home/plugin/rapidplugin/tests/resources/debian/d1"
                 }
+            }
         }
     },
     {

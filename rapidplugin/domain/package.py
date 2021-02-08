@@ -169,6 +169,7 @@ class Function(ABC):
             "filename": self.filename,
             "callable_name": self.name,
             "callable_long_name": self.long_name,
+            "callable_parameters": self.parameters,
             "start_line": self.start_line,
             "end_line": self.end_line
         }
@@ -179,7 +180,6 @@ class Function(ABC):
                 "nloc": self.nloc,
                 "complexity": self.complexity,
                 "token_count": self.token_count,
-                "parameters": self.parameters,
                 "length": self.length,
                 "parameter_count": self.parameter_count
             }
