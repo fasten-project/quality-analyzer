@@ -24,4 +24,4 @@ COPY README.md .
 
 RUN python -m pip install -r requirements.txt
 
-ENTRYPOINT ["python", "/home/plugin/entrypoint.py"]
+ENTRYPOINT ["python", "/plugin/entrypoint.py"]
