@@ -11,20 +11,16 @@ RUN apt-get update \
         subversion \
         mercurial
 
-RUN useradd -m plugin
-
-USER plugin
-
 RUN git config --global user.email "research@softwareimprovementgroup.com" \
  && git config --global user.name "Software Improvement Group Research"
 
-WORKDIR /home/plugin
+WORKDIR /plugin
 
-COPY --chown=plugin rapidplugin rapidplugin/
-COPY --chown=plugin entrypoint.py .
-COPY --chown=plugin setup.py .
-COPY --chown=plugin requirements.txt .
-COPY --chown=plugin README.md .
+COPY rapidplugin rapidplugin/
+COPY entrypoint.py .
+COPY setup.py .
+COPY requirements.txt .
+COPY README.md .
 
 RUN python -m pip install -r requirements.txt
 
