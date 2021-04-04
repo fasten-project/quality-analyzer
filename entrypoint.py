@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 plugin_name = 'RapidPlugin'
 plugin_description = 'A FASTEN plug-in to populate risk related metadata for a product.'
-plugin_version = '1.1.1'
+plugin_version = '1.2.0'
 
 
 def get_args_parser():
@@ -34,15 +34,19 @@ def get_args_parser():
                              help="Kafka topic to consume from.")
 
     args_parser.add_argument('--produce_topic', type=str,
-                             default='fasten.RapidPlugin.callable.out',
-                             help="Kafka topic to produce to.")
+                             default='fasten.RapidPlugin.out',
+                             help="Kafka topic to produce revision-level message to.")
 
+    args_parser.add_argument('--produce_callable_topic', type=str,
+                             default='fasten.RapidPlugin.callable.out',
+                             help="Kafka topic to produce callable-level messages to.")
+    
     args_parser.add_argument('--err_topic', type=str,
-                             default='fasten.RapidPlugin.callable.err',
+                             default='fasten.RapidPlugin.err',
                              help="Kafka topic to write errors to.")
 
     args_parser.add_argument('--log_topic', type=str,
-                             default='fasten.RapidPlugin.callable.log',
+                             default='fasten.RapidPlugin.log',
                              help="Kafka topic to write logs to.")
 
     args_parser.add_argument('--bootstrap_servers', type=str,
@@ -64,6 +68,11 @@ def get_args_parser():
     args_parser.add_argument('--sources_dir', type=str,
                              default='src',
                              help="Base directory for temporary storing downloaded source code.")
+
+    args_parser.add_argument('--max_log_message_width', type=int,
+                             default=320,
+                             help="Maximum number of characters before a log message will be truncated.")
+
     return args_parser
 
 
@@ -72,12 +81,14 @@ def get_config(args):
     c.add_config_value('bootstrap_servers', args.bootstrap_servers)
     c.add_config_value('consume_topic', args.consume_topic)
     c.add_config_value('produce_topic', args.produce_topic)
+    c.add_config_value('produce_callable_topic', args.produce_callable_topic)
     c.add_config_value('err_topic', args.err_topic)
     c.add_config_value('log_topic', args.log_topic)
     c.add_config_value('group_id', args.group_id)
     c.add_config_value('consumption_delay_sec', args.consumption_delay_sec)
     c.add_config_value('consumer_timeout_ms', args.consumer_timeout_ms)
     c.add_config_value('sources_dir', args.sources_dir)
+    c.add_config_value('max_log_message_width', args.max_log_message_width)
     return c
 
 
