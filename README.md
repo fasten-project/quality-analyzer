@@ -29,30 +29,36 @@ The currently supported forges are "mvn", "debian", and "PyPI".
 The plugin will raise an exception if the `forge` in the message is not supported or empty.
 
 #### Maven
-The default topic to consume: `fasten.SyncJava.out`
-
-An example message produced by the SyncJava plugin, which merges out messages from RepoCloner and JavaCGOpal:
+The default topic to consume: `fasten.MetadataDBJavaExtension.out`
 
 ```json
 {
-  "input": {},
-  "host": "fasten-repo-cloner-56dcf76495-bn4c2",
-  "created_at": 1602739158,
-  "plugin_name": "SyncJava",
-  "fasten.RepoCloner.out" : {
-    "payload": {
-        "repoUrl": "",
-        "date": 1291905586,
+  "input": {
+    "input": {
+      "input": {
+        "groupId": "log4j",
+        "artifactId": "log4j",
+        "version": "1.2.17"
+      },
+      "plugin_version": "0.1.2",
+      "consumed_at": 1626960216,
+      "payload": {
+        "date": 1338025419000,
+        "repoUrl": "http://svn.apache.org/viewvc/logging/log4j/tags/v1_2_17_rc3",
+        "groupId": "log4j",
+        "version": "1.2.17",
+        "parentCoordinate": "",
+        "artifactRepository": "https://repo.maven.apache.org/maven2/",
         "forge": "mvn",
-        "groupId": "fasten-project",
-        "artifactId": "fasten",
-        "version": "1.0.0",
-        "sourcesUrl": "http://fasten-project/fasten/fasten-1.0.0-sources.jar",
-        "repoPath": "/mnt/fasten/repos/f/fasten-project/fasten",
-        "repoType": "git",
-        "commitTag": "v1.0.0"
-    }
-  }
+        "sourcesUrl": "https://repo.maven.apache.org/maven2/log4j/log4j/1.2.17/log4j-1.2.17-sources.jar",
+        "artifactId": "log4j",
+        "dependencyData": {...},
+        "projectName": "Apache Log4j",
+        "commitTag": "",
+        "packagingType": "bundle"
+      }, ...
+    }, ...
+  }, ...
 }
 ```
 The message should have all the information to identify a unique `product`.
@@ -67,14 +73,7 @@ This field is the most reliable pointer to the versioned source code of a `produ
 
 If `sourcesUrl` presents and is non-empty, the plugin will download the source code from the url specified in `sourcesUrl`.
 
-If `sourcesUrl` does not present or is empty, the plugin will try the other sources to get the source code.
-
-- `repoPath`
-
-If `repoPath` is not empty, the repository of the `product` has been cloned to the FASTEN server. 
-The plugin will try to check out the right version of the source code if both `repoType` and `commitTag` are non-empty.
-The currently supported`repoType` are "git", "svn", and "hg". 
-The plugin will raise an exception if the `repoType` in the message is not supported.
+If `sourcesUrl` is not present or is empty, the plugin will try the other sources to get the source code.
 
 If none of the above efforts succeed, the plugin will raise an exception 
 specifying that it cannot get the source code.

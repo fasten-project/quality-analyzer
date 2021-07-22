@@ -30,7 +30,7 @@ def get_args_parser():
     args_parser = argparse.ArgumentParser("RapidPlugin")
 
     args_parser.add_argument('--consume_topic', type=str,
-                             default='fasten.RepoCloner.out',
+                             default='fasten.MetadataDBJavaExtension.out',
                              help="Kafka topic to consume from.")
 
     args_parser.add_argument('--produce_topic', type=str,
