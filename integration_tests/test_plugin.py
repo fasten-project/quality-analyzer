@@ -22,7 +22,7 @@ from integration_tests.mocks import MockProducer
 @pytest.fixture()
 def mock_in():
     mock = MockProducer('localhost:9092',
-                        'fasten.RepoCloner.out')
+                        'fasten.MetadataDBJavaExtension.out')
     yield mock
     mock.free_resource()
 
@@ -86,7 +86,7 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
     #     "artifactId": "m1",
     #     "version": "1.0.0",
     #     "sourcesUrl": "",
-    #     "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/git/m1",
+    #     "repoPath": "/plugin/rapidplugin/tests/resources/maven/git/m1",
     #     "repoType": "git",
     #     "commitTag": "1.0.0"
     # },
@@ -96,7 +96,7 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
     #     "artifactId": "m2",
     #     "version": "1.0.0",
     #     "sourcesUrl": "",
-    #     "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/svn/m2",
+    #     "repoPath": "/plugin/rapidplugin/tests/resources/maven/svn/m2",
     #     "repoType": "svn",
     #     "commitTag": "1.0.0"
     # },
@@ -106,7 +106,7 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
         "artifactId": "m3",
         "version": "1.0.0",
         "sourcesUrl": "",
-        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
         "repoType": "hg",
         "commitTag": "1.0.0"
     },
@@ -117,7 +117,7 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
                     "forge": "debian",
                     "product": "d1",
                     "version": "1.0.0",
-                    "sourcePath": "/home/plugin/rapidplugin/tests/resources/debian/d1"
+                    "sourcePath": "/plugin/rapidplugin/tests/resources/debian/d1"
                 }
             }
         }
@@ -126,13 +126,13 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
         "forge": "debian",
         "product": "d1",
         "version": "1.0.0",
-        "sourcePath": "/home/plugin/rapidplugin/tests/resources/debian/d1"
+        "sourcePath": "/plugin/rapidplugin/tests/resources/debian/d1"
     },
     {
         "forge": "PyPI",
         "product": "p1",
         "version": "1.0.0",
-        "sourcePath": "/home/plugin/rapidplugin/tests/resources/pypi/p1"
+        "sourcePath": "/plugin/rapidplugin/tests/resources/pypi/p1"
     }])
 def test_successes(plugin_run, in_message):
     out, log, err = plugin_run
@@ -175,7 +175,7 @@ def test_successes(plugin_run, in_message):
         "artifactId": "m3",
         "version": "1.0.1",
         "sourcesUrl": "",
-        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
         "repoType": "hg",
         "commitTag": "1.0.1"
     },
@@ -208,7 +208,7 @@ def test_successes(plugin_run, in_message):
         "artifactId": "m3",
         "version": "1.0.0",
         "sourcesUrl": "",
-        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
         "repoType": "",
         "commitTag": "1.0.0"
     },
@@ -219,7 +219,7 @@ def test_successes(plugin_run, in_message):
         "artifactId": "m3",
         "version": "1.0.0",
         "sourcesUrl": "",
-        "repoPath": "/home/plugin/rapidplugin/tests/resources/maven/hg/m3",
+        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
         "repoType": "hg",
         "commitTag": ""
     }
