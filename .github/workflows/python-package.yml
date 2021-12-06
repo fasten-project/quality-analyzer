@@ -27,29 +27,10 @@ jobs:
       run: |
         git config --global user.email "quality-analyzer-ci@fasten-project.eu"
         git config --global user.name "quality-analyzer-ci"
-    - name: Install dependencies
+    - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
+        python -m pip install tox
+    - name: Build and test with tox
       run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    - name: Build docker image
-      run: |
-        docker build -t rapidplugin-test .
-
-    - name: Run unit tests
-      run: |
-        docker run --entrypoint python rapidplugin-test -m pytest rapidplugin/tests
-
-    - name: Setup integration environment
-      run: |
-        docker-compose -f integration_tests/kafka-compose.yml up -d
-        docker-compose -f integration_tests/kafka-compose.yml run wait-for-kafka
-
-    - name: Run integration tests
-      run: |
-        pytest integration_tests
+        python -m tox
