@@ -21,7 +21,7 @@ from integration_tests.mocks import MockProducer
 
 @pytest.fixture()
 def mock_in():
-    mock = MockProducer('localhost:9092',
+    mock = MockProducer('kafka:9092',
                         'fasten.MetadataDBJavaExtension.out')
     yield mock
     mock.free_resource()
@@ -30,7 +30,7 @@ def mock_in():
 @pytest.fixture()
 def mock_out():
     mock = MockConsumer('MockConsumerOut',
-                        'localhost:9092',
+                        'kafka:9092',
                         'fasten.RapidPlugin.callable.out')
     mock.skip_messages()
     yield mock
@@ -40,7 +40,7 @@ def mock_out():
 @pytest.fixture()
 def mock_log():
     mock = MockConsumer('MockConsumerLog',
-                        'localhost:9092',
+                        'kafka:9092',
                         'fasten.RapidPlugin.log')
     mock.skip_messages()
     yield mock
@@ -50,7 +50,7 @@ def mock_log():
 @pytest.fixture()
 def mock_err():
     mock = MockConsumer('MockConsumerErr',
-                        'localhost:9092',
+                        'kafka:9092',
                         'fasten.RapidPlugin.err')
     mock.skip_messages()
     yield mock

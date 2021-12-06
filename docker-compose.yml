@@ -1,4 +1,4 @@
-# Copyright 2020 Software Improvement Group
+# Copyright 2021 Software Improvement Group
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,35 +16,43 @@
 version: '2'
 services:
   zookeeper:
-    image: wurstmeister/zookeeper
-    ports:
-      - "2181:2181"
+    image: zookeeper:3.7.0
+
   kafka:
-    image: wurstmeister/kafka
-    ports:
-      - "9092:9092"
+    depends_on:
+      - zookeeper
+    image: wurstmeister/kafka:2.13-2.7.1
     environment:
       KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_MESSAGE_MAX_BYTES: 2097152000
-      KAFKA_LISTENERS: INSIDE://kafka:29092,OUTSIDE://kafka:9092
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:29092,OUTSIDE://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_CREATE_TOPICS: "fasten.MetadataDBJavaExtension.out:1:1,fasten.RapidPlugin.callable.out:1:1,fasten.RapidPlugin.callable.err:1:1,fasten.RapidPlugin.callable.log:1:1"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      KAFKA_COMPRESSION_TYPE: snappy
 
   rapidplugin:
+    depends_on:
+      - kafka
     image: rapidplugin-test
-    entrypoint: ['python', '/plugin/entrypoint.py', '--group_id=RapidPlugin-TEST', '--bootstrap_servers=kafka:29092', '--sources_dir=/plugin/rapidplugin/tests/resources']
+    entrypoint: ['python', '/plugin/entrypoint.py', '--group_id=RapidPlugin-TEST', '--bootstrap_servers=kafka:9092', '--sources_dir=/plugin/rapidplugin/tests/resources']
+
+  rapidplugin-unit-tests:
+    image: rapidplugin-test
+    entrypoint: ['python', '-m', 'pytest', 'rapidplugin/tests']
+
+  rapidplugin-integration-tests:
+    image: rapidplugin-test
+    entrypoint: ['python', '-m', 'pytest', 'integration_tests']
 
   wait-for-kafka:
     image: waisbrot/wait
     links:
       - kafka
     environment:
-      - TARGETS=kafka:29092
+      - TARGETS=kafka:9092
 
 networks:
   default:

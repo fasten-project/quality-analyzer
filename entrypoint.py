@@ -1,4 +1,4 @@
-# Copyright 2020 Software Improvement Group
+# Copyright 2021 Software Improvement Group
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 plugin_name = 'RapidPlugin'
 plugin_description = 'A FASTEN plug-in to populate risk related metadata for a product.'
-plugin_version = '1.2.0'
+plugin_version = '1.2.1'
 
 
 def get_args_parser():
