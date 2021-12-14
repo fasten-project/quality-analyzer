@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 
 from os import path
@@ -24,7 +23,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='quality-analyzer',
-    version='1.2.1',
+    version='1.2.2',
     description='FASTEN RAPID Plugin',
     long_description=long_description,
     long_description_content_type='text/markdown',
