@@ -31,7 +31,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_CREATE_TOPICS: "fasten.MetadataDBJavaExtension.out:1:1,fasten.RapidPlugin.callable.out:1:1,fasten.RapidPlugin.callable.err:1:1,fasten.RapidPlugin.callable.log:1:1"
-      KAFKA_COMPRESSION_TYPE: snappy
+      KAFKA_COMPRESSION_TYPE: gzip
 
   rapidplugin:
     depends_on:
