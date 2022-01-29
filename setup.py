@@ -43,7 +43,6 @@ setup(
         'gitpython',
         'svn',
         'kafka-python==2.0.2',
-        'python-snappy',
         'crc32c'
     ]
 )
