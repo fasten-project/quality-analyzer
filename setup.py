@@ -42,7 +42,6 @@ setup(
         'requests',
         'gitpython',
         'svn',
-        'kafka-python==2.0.2',
-        'crc32c'
+        'kafka-python==2.0.2'
     ]
 )
