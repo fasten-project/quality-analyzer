@@ -24,8 +24,7 @@ RUN apt-get update \
  && apt-get install -y -qq \
         git \
         subversion \
-        mercurial \
-        libsnappy-dev
+        mercurial
 
 RUN git config --global user.email "research@softwareimprovementgroup.com" \
  && git config --global user.name "Software Improvement Group Research"
