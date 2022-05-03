@@ -182,7 +182,8 @@ class KafkaUtils:
             "undeclared_depset": [],
             "functions": {},
             "dependencyData" : {},
-            "dependencyManagement" : {}
+            "dependencyManagement" : {},
+            "dependencies" : {}
         }
         for key in tailor.keys():
             if key in payload:
