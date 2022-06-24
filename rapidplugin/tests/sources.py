@@ -24,7 +24,7 @@ def sources(tmp_path_factory):
     shutil.copytree('rapidplugin/tests/resources', tmp, dirs_exist_ok=True)
     yield tmp
 
-    
+
 def fix_sourcePath(record, tmp_sources_path):
     if "sourcePath" in record:
         sourcePath = record["sourcePath"]

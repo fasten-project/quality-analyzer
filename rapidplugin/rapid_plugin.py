@@ -17,8 +17,8 @@ import datetime
 import textwrap
 from time import sleep
 from fasten.plugins.kafka import KafkaPluginNonBlocking
-from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
-from rapidplugin.utils.utils import KafkaUtils
+from rapidplugin.lizard_analyzer import LizardAnalyzer
+from rapidplugin.utils import Utils
 
 
 class RapidPlugin(KafkaPluginNonBlocking):
@@ -59,7 +59,6 @@ class RapidPlugin(KafkaPluginNonBlocking):
         self.announce_activation()
         try:
             while True:
-                # self.announce_heartbeat()
                 self.flush_logs()
                 sleep(self.consumption_delay_sec)
                 try:
@@ -80,15 +79,6 @@ class RapidPlugin(KafkaPluginNonBlocking):
                          "Plugin activated with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
 
-    def announce_heartbeat(self):
-        '''
-        Announces a heartbeat of the running plugin to the log_topic.
-        '''
-        self.handle_success(format(
-            self.plugin_config.get_all_values()),
-                         "Plugin heartbeat with configuration " +
-                         "'" + self.plugin_config.get_config_name() + "'")
-
     def announce_termination(self):
         '''
         Announces the termination of this plugin instance to the log_topic.
@@ -98,19 +88,18 @@ class RapidPlugin(KafkaPluginNonBlocking):
                          "Plugin terminated with configuration " +
                          "'" + self.plugin_config.get_config_name() + "'")
 
-    def consume(self, record):
+    def consume(self, message):
         '''
         Call-back method to handle a message on self.consume_topic.
         Parses the payload and passes on to the self.produce method for
         processing the provided coordinates.
 
         Arguments:
-          record (JSON): message from self.consume_topic
+          message (JSON): message from self.consume_topic
         '''
-        payload = KafkaUtils.extract_payload_from_metadata_db_ext_topic(record)
-        in_payload = KafkaUtils.tailor_input(payload)
+        in_payload = message
         try:
-            KafkaUtils.validate_message(payload)
+            Utils.validate_message(in_payload)
             self.handle_success(in_payload, "Consumed message successfully.")
             self.produce(in_payload)
         except Exception as e:
@@ -137,7 +126,7 @@ class RapidPlugin(KafkaPluginNonBlocking):
 
     def produce_revision(self, in_payload, out_payloads):
         for out_payload in out_payloads:
-                self.produce_callable(in_payload, out_payload)
+            self.produce_callable(in_payload, out_payload)
         out_message = self.create_message(in_payload, {"callables_produced": len(out_payloads)})
         self.emit_message(self.produce_topic, out_message, "[SUCCESS]", out_message)
 

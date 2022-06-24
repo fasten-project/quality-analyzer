@@ -22,13 +22,7 @@ USER root
 
 RUN apt-get update \
  && apt-get install -y -qq \
-        git \
-        subversion \
-        mercurial \
         libsnappy-dev
-
-RUN git config --global user.email "research@softwareimprovementgroup.com" \
- && git config --global user.name "Software Improvement Group Research"
 
 WORKDIR /plugin
 

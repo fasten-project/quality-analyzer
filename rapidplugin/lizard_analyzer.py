@@ -18,38 +18,37 @@ import datetime
 
 import lizard
 
-from rapidplugin.domain.package import Package, File, Function
-from rapidplugin.utils.utils import MavenUtils, KafkaUtils
+from rapidplugin.domain import Package, File, Function
+from rapidplugin.utils import Utils
 
 logger = logging.getLogger(__name__)
 
 
 class LizardAnalyzer:
+
     def __init__(self, base_dir):
         self.analyzer_name = "Lizard"
         self.base_dir = base_dir
 
     def analyze(self, payload):
-        '''
-        TODO
-        '''
         out_payloads = []
         forge = payload['forge']
-        product = payload['groupId'] + ":" + payload['artifactId'] if forge == "mvn" else payload['product']
+        product = payload['product']
         version = payload['version']
-        with MavenUtils.get_source_path(payload, self.base_dir) as path:
-            package = LizardPackage(forge, product, version, str(path))
-            metadata = package.metadata()
-            for function in package.functions():
-                m = {}
-                m.update(metadata)
-                m.update(function.metadata())
-                m.update(function.metrics())
-                old_f = m['filename']
-                new_f = KafkaUtils.relativize_filename(old_f, str(path))
-                m.update({'filename': new_f})
-                out_payloads.append(m)
-                logger.debug("callable: {}".format(m) + '\n')
+        source_path = payload['sourcePath']
+
+        package = LizardPackage(forge, product, version, str(source_path))
+        metadata = package.metadata()
+        for function in package.functions():
+            m = {}
+            m.update(metadata)
+            m.update(function.metadata())
+            m.update(function.metrics())
+            old_f = m['filename']
+            new_f = Utils.relativize_filename(old_f, str(source_path))
+            m.update({'filename': new_f})
+            out_payloads.append(m)
+            logger.debug("callable: {}".format(m) + '\n')
         return out_payloads
 
 

@@ -23,14 +23,14 @@ logger = logging.getLogger(__name__)
 
 plugin_name = 'RapidPlugin'
 plugin_description = 'A FASTEN plug-in to populate risk related metadata for a product.'
-plugin_version = '1.2.4'
+plugin_version = '1.3.0'
 
 
 def get_args_parser():
     args_parser = argparse.ArgumentParser("RapidPlugin")
 
     args_parser.add_argument('--consume_topic', type=str,
-                             default='fasten.MetadataDBJavaExtension.out',
+                             default='fasten.SourcesProvider.out',
                              help="Kafka topic to consume from.")
 
     args_parser.add_argument('--produce_topic', type=str,
@@ -40,7 +40,7 @@ def get_args_parser():
     args_parser.add_argument('--produce_callable_topic', type=str,
                              default='fasten.RapidPlugin.callable.out',
                              help="Kafka topic to produce callable-level messages to.")
-    
+
     args_parser.add_argument('--err_topic', type=str,
                              default='fasten.RapidPlugin.err',
                              help="Kafka topic to write errors to.")

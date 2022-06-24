@@ -23,7 +23,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='quality-analyzer',
-    version='1.2.4',
+    version='1.3.0',
     description='FASTEN RAPID Plugin',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -39,9 +39,6 @@ setup(
     install_requires=[
         'fasten',
         'lizard',
-        'requests',
-        'gitpython',
-        'svn',
         'kafka-python==2.0.2',
         'python-snappy',
         'crc32c'

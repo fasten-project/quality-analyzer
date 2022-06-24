@@ -1,4 +1,4 @@
-# Copyright 2020 Software Improvement Group
+# Copyright 2022 Software Improvement Group
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from integration_tests.mocks import MockProducer
 @pytest.fixture()
 def mock_in():
     mock = MockProducer('kafka:9092',
-                        'fasten.MetadataDBJavaExtension.out')
+                        'fasten.SourcesProvider.out')
     yield mock
     mock.free_resource()
 
@@ -72,55 +72,9 @@ def plugin_run(mock_in, mock_out, mock_log, mock_err,
 @pytest.mark.parametrize('in_message', [
     {
         "forge": "mvn",
-        "groupId": "ai.api",
-        "artifactId": "libai",
-        "version": "1.6.12",
-        "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
-        "repoPath": "",
-        "repoType": "",
-        "commitTag": ""
-    },
-    # {
-    #     "forge": "mvn",
-    #     "groupId": "test-mvn",
-    #     "artifactId": "m1",
-    #     "version": "1.0.0",
-    #     "sourcesUrl": "",
-    #     "repoPath": "/plugin/rapidplugin/tests/resources/maven/git/m1",
-    #     "repoType": "git",
-    #     "commitTag": "1.0.0"
-    # },
-    # {
-    #     "forge": "mvn",
-    #     "groupId": "test-mvn",
-    #     "artifactId": "m2",
-    #     "version": "1.0.0",
-    #     "sourcesUrl": "",
-    #     "repoPath": "/plugin/rapidplugin/tests/resources/maven/svn/m2",
-    #     "repoType": "svn",
-    #     "commitTag": "1.0.0"
-    # },
-    {
-        "forge": "mvn",
-        "groupId": "test-mvn",
-        "artifactId": "m3",
+        "product": "m1",
         "version": "1.0.0",
-        "sourcesUrl": "",
-        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
-        "repoType": "hg",
-        "commitTag": "1.0.0"
-    },
-    {
-        "input" : {
-            "input": {
-                "payload": {
-                    "forge": "debian",
-                    "product": "d1",
-                    "version": "1.0.0",
-                    "sourcePath": "/plugin/rapidplugin/tests/resources/debian/d1"
-                }
-            }
-        }
+        "sourcePath": "/plugin/rapidplugin/tests/resources/maven/m1"
     },
     {
         "forge": "debian",
@@ -144,84 +98,15 @@ def test_successes(plugin_run, in_message):
 @pytest.mark.parametrize('in_message', [
     # missing 'forge'
     {
-        "groupId": "ai.api",
-        "artifactId": "libai",
-        "version": "1.6.12",
-        "repoPath": "",
-        "repoType": "",
-        "commitTag": ""
+        "product": "m1",
+        "version": "1.0.0",
+        "sourcePath": "/plugin/rapidplugin/tests/resources/maven/m1"
     },
-    # missing 'sourcePath' for pypi
+    # missing 'sourcePath'
     {
         "forge": "PyPI",
         "product": "p1",
         "version": "1.0.0"
-    },
-    # empty 'sourcesUrl', and svn repo not supported
-    {
-        "forge": "mvn",
-        "groupId": "test-mvn",
-        "artifactId": "m2",
-        "version": "1.0.0",
-        "sourcesUrl": "",
-        "repoPath": "maven/svn/m2",
-        "repoType": "svn",
-        "commitTag": "1.0.0"
-    },
-    # empty 'sourcesUrl', and invalid 'commitTag'
-    {
-        "forge": "mvn",
-        "groupId": "test-mvn",
-        "artifactId": "m3",
-        "version": "1.0.1",
-        "sourcesUrl": "",
-        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
-        "repoType": "hg",
-        "commitTag": "1.0.1"
-    },
-    # empty 'sourcesUrl', and missing 'repoType'
-    {
-        "date": 1434489838,
-        "forge": "mvn",
-        "groupId": "org.apache.avro",
-        "sourcesUrl": "",
-        "artifactId": "trevni-doc",
-        "repoPath": "",
-        "version": "1.7.6-cdh5.4.2.1",
-        "commitTag": ""
-    },
-    # empty 'sourcesUrl', and empty 'repoPath'
-    {
-        "forge": "mvn",
-        "groupId": "test-mvn",
-        "artifactId": "m3",
-        "version": "1.0.0",
-        "sourcesUrl": "",
-        "repoPath": "",
-        "repoType": "hg",
-        "commitTag": "1.0.0"
-    },
-    # empty 'sourcesUrl', and empty 'repoType'
-    {
-        "forge": "mvn",
-        "groupId": "test-mvn",
-        "artifactId": "m3",
-        "version": "1.0.0",
-        "sourcesUrl": "",
-        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
-        "repoType": "",
-        "commitTag": "1.0.0"
-    },
-    # empty 'sourcesUrl', and empty 'commitTag'
-    {
-        "forge": "mvn",
-        "groupId": "test-mvn",
-        "artifactId": "m3",
-        "version": "1.0.0",
-        "sourcesUrl": "",
-        "repoPath": "/plugin/rapidplugin/tests/resources/maven/hg/m3",
-        "repoType": "hg",
-        "commitTag": ""
     }
 ])
 def test_failures(plugin_run, in_message):
