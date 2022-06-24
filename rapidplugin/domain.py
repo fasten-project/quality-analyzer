@@ -20,7 +20,7 @@ Module, File, Method.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -192,8 +192,3 @@ class Function(ABC):
         return hash(('name', self.name,
                      'long_name', self.long_name,
                      'params', (x for x in self.parameters)))
-
-
-
-
-

@@ -14,7 +14,6 @@
 #
 
 import pytest
-from rapidplugin.domain.package import Package
 
 
 @pytest.fixture
@@ -46,6 +45,7 @@ class TestPackage:
     def test_metrics(self):
         assert True
 
+
 class TestFile:
 
     def file(self):
@@ -53,5 +53,6 @@ class TestFile:
 
 
 class TestFunction:
+
     def function(self):
         pass

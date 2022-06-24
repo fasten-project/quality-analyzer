@@ -13,64 +13,30 @@
 # limitations under the License.
 #
 
-import os
 import pytest
-from rapidplugin.tests.sources import sources
 from rapidplugin.tests.sources import fix_sourcePath
-from rapidplugin.analysis.lizard_analyzer import LizardAnalyzer
+from rapidplugin.lizard_analyzer import LizardAnalyzer
+from rapidplugin.tests.sources import sources
 
 
 @pytest.fixture(scope='session')
 def analyzer(sources):
     yield LizardAnalyzer(str(sources))
 
-mvn_libai_1_6_12 = {
+
+java_message = {
     "forge": "mvn",
-    "groupId": "ai.api",
-    "artifactId": "libai",
-    "version": "1.6.12",
-    "sourcesUrl": "https://repo1.maven.org/maven2/ai/api/libai/1.6.12/libai-1.6.12-sources.jar",
-    "repoPath": "",
-    "repoType": "",
-    "commitTag": ""
-}
-mvn_message_with_git_repo = {
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m1",
+    "product": "m1",
     "version": "1.0.0",
-    "sourcesUrl": "",
-    "repoPath": "maven/git/m1",
-    "repoType": "git",
-    "commitTag": "1.0.0"
+    "sourcePath": "maven/m1"
 }
-mvn_message_with_svn_repo = {
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m2",
-    "version": "1.0.0",
-    "sourcesUrl": "",
-    "repoPath": "maven/svn/m2",
-    "repoType": "svn",
-    "commitTag": "1.0.0"
-}
-mvn_message_with_hg_repo = {
-    "forge": "mvn",
-    "groupId": "test-mvn",
-    "artifactId": "m3",
-    "version": "1.0.0",
-    "sourcesUrl": "",
-    "repoPath": "rapidplugin/tests/resources/maven/hg/m3",
-    "repoType": "hg",
-    "commitTag": "1.0.0"
-}
-debian_message = {
+c_message = {
     "forge": "debian",
     "product": "d1",
     "version": "1.0.0",
     "sourcePath": "debian/d1"
 }
-pypi_message = {
+python_message = {
     "forge": "PyPI",
     "product": "p1",
     "version": "1.0.0",
@@ -79,33 +45,32 @@ pypi_message = {
 
 # List of (payload, function_count) pairs
 FUNCTION_COUNT_DATA = [
-    (mvn_libai_1_6_12, 411),
-    # (mvn_message_with_git_repo, 1),
-    (mvn_message_with_hg_repo, 1),
-    (debian_message, 1),
-    (pypi_message, 1)
+    (java_message, 1),
+    (c_message, 1),
+    (python_message, 1)
 ]
 
 # List of (payload, start_line, end_line) tuples
 FUNCTION_LINE_DATA = [
-    (mvn_message_with_hg_repo, 2, 4),
-    (debian_message, 3, 3),
-    (pypi_message, 1, 2)
+    (java_message, 2, 4),
+    (c_message, 3, 3),
+    (python_message, 1, 2)
 ]
 
 # List of (payload, nloc, complexity, token_count, parameter_count) tuples
 FUNCTION_METRICS_DATA = [
-    (mvn_message_with_hg_repo, 3, 1, 18, 1),
-    (debian_message, 1, 1, 5, 0),
-    (pypi_message, 2, 1, 5, 0)
+    (java_message, 3, 1, 16, 1),
+    (c_message, 1, 1, 5, 0),
+    (python_message, 2, 1, 5, 0)
 ]
 
 # List of (payload, filename) pairs
 FUNCTION_FILENAME_DATA = [
-    (mvn_message_with_hg_repo, "m3.java"),
-    (debian_message, "d1.c"),
-    (pypi_message, "p1.py")
+    (java_message, "m1.java"),
+    (c_message, "d1.c"),
+    (python_message, "p1.py")
 ]
+
 
 @pytest.mark.parametrize('record,fc', FUNCTION_COUNT_DATA)
 def test_function_count(analyzer, sources, record, fc: int):
