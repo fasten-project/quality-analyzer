@@ -20,10 +20,6 @@ LABEL maintainer="Software Improvement Group Research <research@sig.eu>"
 
 USER root
 
-RUN apt-get update \
- && apt-get install -y -qq \
-        libsnappy-dev
-
 WORKDIR /plugin
 
 COPY rapidplugin rapidplugin/
