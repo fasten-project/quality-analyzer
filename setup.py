@@ -31,16 +31,15 @@ setup(
     author='',
     author_email='',
     classifiers=[
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     keywords='',
     packages=find_packages(),
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     install_requires=[
         'fasten',
         'lizard',
         'kafka-python==2.0.2',
-        'python-snappy',
         'crc32c'
     ]
 )

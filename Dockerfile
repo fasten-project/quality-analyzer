@@ -14,7 +14,7 @@
 #
 
 ########################################################################################
-FROM python:3.9-slim-bullseye
+FROM python:3.10-slim-bullseye
 ########################################################################################
 LABEL maintainer="Software Improvement Group Research <research@sig.eu>"
 
